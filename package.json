@@ -8,3 +8,4 @@
     "typecheck:libs": "tsc -b lib/api-zod lib/api-client-react"
   }
 }
+
