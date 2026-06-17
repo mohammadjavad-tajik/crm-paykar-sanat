@@ -1,0 +1,10 @@
+{
+  "name": "@workspace/root",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter @workspace/crm run dev",
+    "build": "pnpm --filter @workspace/crm run build",
+    "typecheck:libs": "tsc -b lib/api-zod lib/api-client-react"
+  }
+}

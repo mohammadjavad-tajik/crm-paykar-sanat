@@ -1,0 +1,774 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Persian CRM API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: customers
+    description: Customer management
+  - name: jobs
+    description: Job management
+  - name: invoices
+    description: Invoice management
+  - name: settings
+    description: Business settings
+  - name: dashboard
+    description: Dashboard statistics
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /customers:
+    get:
+      operationId: listCustomers
+      tags: [customers]
+      summary: List all customers
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Customer"
+    post:
+      operationId: createCustomer
+      tags: [customers]
+      summary: Create a new customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerInput"
+      responses:
+        "201":
+          description: Created customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+
+  /customers/{id}:
+    get:
+      operationId: getCustomer
+      tags: [customers]
+      summary: Get customer by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateCustomer
+      tags: [customers]
+      summary: Update a customer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerUpdate"
+      responses:
+        "200":
+          description: Updated customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+    delete:
+      operationId: deleteCustomer
+      tags: [customers]
+      summary: Delete a customer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /customers/{id}/profile:
+    get:
+      operationId: getCustomerProfile
+      tags: [customers]
+      summary: Get full customer profile with jobs and invoices
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Customer profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerProfile"
+
+  /jobs:
+    get:
+      operationId: listJobs
+      tags: [jobs]
+      summary: List all jobs
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, completed]
+        - name: customer_id
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Job"
+    post:
+      operationId: createJob
+      tags: [jobs]
+      summary: Create a new job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobInput"
+      responses:
+        "201":
+          description: Created job
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+
+  /jobs/{id}:
+    get:
+      operationId: getJob
+      tags: [jobs]
+      summary: Get job by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Job
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+    patch:
+      operationId: updateJob
+      tags: [jobs]
+      summary: Update a job
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobUpdate"
+      responses:
+        "200":
+          description: Updated job
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+    delete:
+      operationId: deleteJob
+      tags: [jobs]
+      summary: Delete a job
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /jobs/{id}/complete:
+    patch:
+      operationId: completeJob
+      tags: [jobs]
+      summary: Mark a job as completed
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Completed job
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+
+  /invoices:
+    get:
+      operationId: listInvoices
+      tags: [invoices]
+      summary: List all invoices
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [paid, unpaid]
+        - name: customer_id
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of invoices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Invoice"
+    post:
+      operationId: createInvoice
+      tags: [invoices]
+      summary: Create a new invoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvoiceInput"
+      responses:
+        "201":
+          description: Created invoice
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invoice"
+
+  /invoices/{id}:
+    get:
+      operationId: getInvoice
+      tags: [invoices]
+      summary: Get invoice by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Invoice
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invoice"
+    patch:
+      operationId: updateInvoice
+      tags: [invoices]
+      summary: Update an invoice
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvoiceUpdate"
+      responses:
+        "200":
+          description: Updated invoice
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invoice"
+    delete:
+      operationId: deleteInvoice
+      tags: [invoices]
+      summary: Delete an invoice
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /invoices/{id}/pay:
+    patch:
+      operationId: payInvoice
+      tags: [invoices]
+      summary: Mark invoice as paid
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated invoice
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invoice"
+
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get business settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+    patch:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update business settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SettingsUpdate"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+
+  /settings/verify-pin:
+    post:
+      operationId: verifyPin
+      tags: [settings]
+      summary: Verify PIN
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PinVerify"
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PinVerifyResult"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /backup/export:
+    get:
+      operationId: exportBackup
+      tags: [dashboard]
+      summary: Export all data as JSON
+      responses:
+        "200":
+          description: Backup data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackupData"
+
+  /backup/import:
+    post:
+      operationId: importBackup
+      tags: [dashboard]
+      summary: Import backup data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BackupData"
+      responses:
+        "200":
+          description: Import result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportResult"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Customer:
+      type: object
+      required: [id, name, phone, created_at]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        address:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        initial_balance:
+          type: number
+        created_at:
+          type: string
+
+    CustomerInput:
+      type: object
+      required: [name, phone]
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        description:
+          type: string
+        initial_balance:
+          type: number
+
+    CustomerUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        address:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        initial_balance:
+          type: number
+
+    CustomerProfile:
+      type: object
+      required: [customer, jobs, invoices, total_debt]
+      properties:
+        customer:
+          $ref: "#/components/schemas/Customer"
+        jobs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Job"
+        invoices:
+          type: array
+          items:
+            $ref: "#/components/schemas/Invoice"
+        total_debt:
+          type: number
+
+    Job:
+      type: object
+      required: [id, customer_id, description, status, created_at]
+      properties:
+        id:
+          type: integer
+        customer_id:
+          type: integer
+        customer_name:
+          type: ["string", "null"]
+        description:
+          type: string
+        status:
+          type: string
+          enum: [pending, completed]
+        created_at:
+          type: string
+        completed_at:
+          type: ["string", "null"]
+
+    JobInput:
+      type: object
+      required: [customer_id, description]
+      properties:
+        customer_id:
+          type: integer
+        description:
+          type: string
+        status:
+          type: string
+          enum: [pending, completed]
+
+    JobUpdate:
+      type: object
+      properties:
+        description:
+          type: string
+        status:
+          type: string
+          enum: [pending, completed]
+
+    InvoiceItem:
+      type: object
+      required: [title, quantity, unit_price]
+      properties:
+        title:
+          type: string
+        quantity:
+          type: number
+        unit_price:
+          type: number
+
+    Invoice:
+      type: object
+      required: [id, customer_id, title, date, items, total_amount, status, created_at]
+      properties:
+        id:
+          type: integer
+        customer_id:
+          type: integer
+        customer_name:
+          type: ["string", "null"]
+        job_id:
+          type: ["integer", "null"]
+        title:
+          type: string
+        date:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvoiceItem"
+        notes:
+          type: ["string", "null"]
+        discount:
+          type: number
+        total_amount:
+          type: number
+        status:
+          type: string
+          enum: [paid, unpaid]
+        created_at:
+          type: string
+
+    InvoiceInput:
+      type: object
+      required: [customer_id, title, date, items]
+      properties:
+        customer_id:
+          type: integer
+        job_id:
+          type: ["integer", "null"]
+        title:
+          type: string
+        date:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvoiceItem"
+        notes:
+          type: string
+        discount:
+          type: number
+        status:
+          type: string
+          enum: [paid, unpaid]
+
+    InvoiceUpdate:
+      type: object
+      properties:
+        customer_id:
+          type: integer
+        job_id:
+          type: ["integer", "null"]
+        title:
+          type: string
+        date:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvoiceItem"
+        notes:
+          type: ["string", "null"]
+        discount:
+          type: number
+        status:
+          type: string
+          enum: [paid, unpaid]
+
+    Settings:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: integer
+        business_name:
+          type: ["string", "null"]
+        owner_name:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        logo_url:
+          type: ["string", "null"]
+        pin_hash:
+          type: ["string", "null"]
+        auto_lock_minutes:
+          type: integer
+
+    SettingsUpdate:
+      type: object
+      properties:
+        business_name:
+          type: ["string", "null"]
+        owner_name:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        logo_url:
+          type: ["string", "null"]
+        pin_hash:
+          type: ["string", "null"]
+        auto_lock_minutes:
+          type: integer
+
+    PinVerify:
+      type: object
+      required: [pin]
+      properties:
+        pin:
+          type: string
+
+    PinVerifyResult:
+      type: object
+      required: [valid]
+      properties:
+        valid:
+          type: boolean
+
+    DashboardStats:
+      type: object
+      required: [total_customers, total_pending_jobs, total_unpaid_invoices, total_unpaid_amount, recent_jobs]
+      properties:
+        total_customers:
+          type: integer
+        total_pending_jobs:
+          type: integer
+        total_unpaid_invoices:
+          type: integer
+        total_unpaid_amount:
+          type: number
+        recent_jobs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Job"
+
+    BackupData:
+      type: object
+      required: [customers, jobs, invoices, settings]
+      properties:
+        customers:
+          type: array
+          items:
+            type: object
+        jobs:
+          type: array
+          items:
+            type: object
+        invoices:
+          type: array
+          items:
+            type: object
+        settings:
+          type: object
+
+    ImportResult:
+      type: object
+      required: [success, message]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
