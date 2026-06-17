@@ -135,5 +135,6 @@
   }
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    font-size: 15px;
   }
 }

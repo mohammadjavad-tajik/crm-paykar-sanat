@@ -16,7 +16,16 @@ import InvoiceDetail from "@/pages/InvoiceDetail";
 import Settings from "@/pages/Settings";
 import LockScreen from "@/pages/LockScreen";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 function Router() {
   return (

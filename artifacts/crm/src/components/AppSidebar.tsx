@@ -23,8 +23,8 @@ function NavContent({ onClose }: { onClose?: () => void }) {
       {/* Header */}
       <div className="flex h-16 shrink-0 items-center px-5 border-b border-white/10">
         <div>
-          <div className="font-bold text-base text-white leading-tight">پایکار صنعت</div>
-          <div className="text-xs text-white/60 mt-0.5">سیستم مدیریت</div>
+          <div className="font-bold text-lg text-white leading-tight">پایکار صنعت</div>
+          <div className="text-sm text-white/60 mt-0.5">سیستم مدیریت</div>
         </div>
       </div>
 
@@ -39,13 +39,13 @@ function NavContent({ onClose }: { onClose?: () => void }) {
               onClick={onClose}
               data-testid={`nav-link-${item.name}`}
               className={cn(
-                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
+                "group flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium transition-all",
                 isActive
                   ? "bg-white/20 text-white"
                   : "text-white/80 hover:bg-white/10 hover:text-white"
               )}
             >
-              <item.icon className="h-5 w-5 shrink-0" />
+              <item.icon className="h-5 w-5 shrink-0 opacity-90" />
               {item.name}
             </Link>
           );
@@ -57,7 +57,7 @@ function NavContent({ onClose }: { onClose?: () => void }) {
         <button
           onClick={() => { onClose?.(); lock(); }}
           data-testid="button-lock"
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-base font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all"
         >
           <Lock className="h-5 w-5 shrink-0" />
           قفل کردن
