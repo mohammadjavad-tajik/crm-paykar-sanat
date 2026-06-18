@@ -741,6 +741,7 @@ export const DeleteSupplierResponse = zod.void()
 export const ListEquipmentCategoriesResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
+  "parent_id": zod.number().nullable().optional(),
   "created_at": zod.string()
 })
 export const ListEquipmentCategoriesResponse = zod.array(ListEquipmentCategoriesResponseItem)
@@ -750,12 +751,14 @@ export const ListEquipmentCategoriesResponse = zod.array(ListEquipmentCategories
  * @summary Create a category
  */
 export const CreateEquipmentCategoryBody = zod.object({
-  "name": zod.string()
+  "name": zod.string(),
+  "parent_id": zod.number().nullable().optional()
 })
 
 export const CreateEquipmentCategoryResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
+  "parent_id": zod.number().nullable().optional(),
   "created_at": zod.string()
 })
 
@@ -768,12 +771,14 @@ export const UpdateEquipmentCategoryParams = zod.object({
 })
 
 export const UpdateEquipmentCategoryBody = zod.object({
-  "name": zod.string()
+  "name": zod.string(),
+  "parent_id": zod.number().nullable().optional()
 })
 
 export const UpdateEquipmentCategoryResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
+  "parent_id": zod.number().nullable().optional(),
   "created_at": zod.string()
 })
 

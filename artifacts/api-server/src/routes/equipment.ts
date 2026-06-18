@@ -43,16 +43,19 @@ router.get("/equipment-categories", async (req, res) => {
 });
 
 router.post("/equipment-categories", async (req, res) => {
-  const { name } = req.body;
+  const { name, parent_id } = req.body;
   if (!name) { res.status(400).json({ error: "name required" }); return; }
-  const [row] = await db.insert(equipmentCategoriesTable).values({ name }).returning();
+  const [row] = await db.insert(equipmentCategoriesTable).values({ name, parent_id: parent_id ?? null }).returning();
   res.status(201).json(row);
 });
 
 router.patch("/equipment-categories/:id", async (req, res) => {
   const id = Number(req.params.id);
-  const { name } = req.body;
-  const [row] = await db.update(equipmentCategoriesTable).set({ name }).where(eq(equipmentCategoriesTable.id, id)).returning();
+  const { name, parent_id } = req.body;
+  const updateData: Record<string, unknown> = {};
+  if (name !== undefined) updateData.name = name;
+  if (parent_id !== undefined) updateData.parent_id = parent_id ?? null;
+  const [row] = await db.update(equipmentCategoriesTable).set(updateData).where(eq(equipmentCategoriesTable.id, id)).returning();
   if (!row) { res.status(404).json({ error: "Not found" }); return; }
   res.json(row);
 });

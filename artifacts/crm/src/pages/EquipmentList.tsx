@@ -7,7 +7,7 @@ import {
   getListEquipmentQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Pencil, Search, ChevronDown, ChevronUp, Tag, DollarSign, Link2 } from "lucide-react";
+import { Plus, Trash2, Pencil, Search, ChevronDown, ChevronUp, Tag, Link2, ChevronLeft } from "lucide-react";
 import { formatToman } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { useForm, useFieldArray } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 
 type SpecEntry = { key: string; value: string };
 type EquipmentFormData = {
@@ -38,6 +37,54 @@ type SupplierLinkFormData = {
   notes?: string;
 };
 
+type Category = { id: number; name: string; parent_id?: number | null; created_at: string };
+
+function buildCategoryTree(cats: Category[]): Array<Category & { depth: number }> {
+  const result: Array<Category & { depth: number }> = [];
+  const roots = cats.filter((c) => !c.parent_id);
+
+  function addBranch(cat: Category, depth: number) {
+    result.push({ ...cat, depth });
+    const children = cats
+      .filter((c) => c.parent_id === cat.id)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    children.forEach((child) => addBranch(child, depth + 1));
+  }
+
+  roots.sort((a, b) => a.name.localeCompare(b.name));
+  roots.forEach((r) => addBranch(r, 0));
+
+  const orphans = cats.filter((c) => c.parent_id && !cats.find((p) => p.id === c.parent_id));
+  orphans.forEach((o) => result.push({ ...o, depth: 0 }));
+
+  return result;
+}
+
+function getSubtreeIds(catId: number, cats: Category[]): number[] {
+  const ids: number[] = [catId];
+  cats.filter((c) => c.parent_id === catId).forEach((child) => {
+    ids.push(...getSubtreeIds(child.id, cats));
+  });
+  return ids;
+}
+
+function TreeSelectItems({ cats, allowNone = true }: { cats: Category[]; allowNone?: boolean }) {
+  const tree = buildCategoryTree(cats);
+  return (
+    <>
+      {allowNone && <SelectItem value="none">بدون دسته</SelectItem>}
+      {tree.map((c) => (
+        <SelectItem key={c.id} value={String(c.id)}>
+          <span style={{ paddingRight: `${c.depth * 14}px` }} className="inline-flex items-center gap-1">
+            {c.depth > 0 && <ChevronLeft className="h-3 w-3 text-muted-foreground shrink-0" />}
+            {c.name}
+          </span>
+        </SelectItem>
+      ))}
+    </>
+  );
+}
+
 function EquipmentForm({
   defaultValues, onSubmit, isPending, submitLabel, categories,
 }: {
@@ -45,7 +92,7 @@ function EquipmentForm({
   onSubmit: (data: EquipmentFormData) => void;
   isPending: boolean;
   submitLabel: string;
-  categories: Array<{ id: number; name: string }>;
+  categories: Category[];
 }) {
   const form = useForm<EquipmentFormData>({ defaultValues });
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "specs" });
@@ -64,10 +111,7 @@ function EquipmentForm({
                 <SelectTrigger className="dir-rtl"><SelectValue placeholder="انتخاب دسته" /></SelectTrigger>
               </FormControl>
               <SelectContent className="dir-rtl">
-                <SelectItem value="none">بدون دسته</SelectItem>
-                {categories.map((c) => (
-                  <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
-                ))}
+                <TreeSelectItems cats={categories} />
               </SelectContent>
             </Select>
           </FormItem>
@@ -167,7 +211,7 @@ function SupplierLinkForm({
 
 function EquipmentRow({ equipment, categories, suppliers, onEdit, onDelete }: {
   equipment: any;
-  categories: Array<{ id: number; name: string }>;
+  categories: Category[];
   suppliers: Array<{ id: number; name: string }>;
   onEdit: () => void;
   onDelete: () => void;
@@ -182,7 +226,6 @@ function EquipmentRow({ equipment, categories, suppliers, onEdit, onDelete }: {
   });
 
   const addLink = useAddEquipmentSupplier();
-  const updateLink = useUpdateEquipmentSupplier();
   const deleteLink = useDeleteEquipmentSupplier();
 
   const invalidateEquipment = () => queryClient.invalidateQueries({ queryKey: getListEquipmentQueryKey() });
@@ -223,6 +266,12 @@ function EquipmentRow({ equipment, categories, suppliers, onEdit, onDelete }: {
 
   const specs = (equipment.specs as SpecEntry[]) ?? [];
 
+  const parentCat = categories.find((c) => c.id === equipment.category_id);
+  const grandParentCat = parentCat?.parent_id ? categories.find((c) => c.id === parentCat.parent_id) : null;
+  const categoryLabel = grandParentCat
+    ? `${grandParentCat.name} / ${parentCat?.name}`
+    : equipment.category_name;
+
   return (
     <>
       <TableRow className="hover:bg-muted/30 transition-colors">
@@ -236,8 +285,8 @@ function EquipmentRow({ equipment, categories, suppliers, onEdit, onDelete }: {
           </button>
         </TableCell>
         <TableCell className="text-center">
-          {equipment.category_name ? (
-            <Badge variant="secondary" className="text-xs">{equipment.category_name}</Badge>
+          {categoryLabel ? (
+            <Badge variant="secondary" className="text-xs">{categoryLabel}</Badge>
           ) : <span className="text-muted-foreground text-sm">—</span>}
         </TableCell>
         <TableCell className="text-center text-sm">
@@ -357,12 +406,25 @@ export default function EquipmentList() {
   const [editEquipment, setEditEquipment] = useState<any | null>(null);
   const [isCatOpen, setIsCatOpen] = useState(false);
   const [newCatName, setNewCatName] = useState("");
+  const [newCatParentId, setNewCatParentId] = useState<string>("none");
 
-  const { data: equipments, isLoading } = useListEquipment({
-    search: search || undefined,
-    category_id: categoryFilter && categoryFilter !== "all" ? Number(categoryFilter) : undefined,
-  });
   const { data: categories } = useListEquipmentCategories();
+  const cats: Category[] = (categories ?? []) as Category[];
+
+  const filterCategoryIds =
+    categoryFilter && categoryFilter !== "all"
+      ? getSubtreeIds(Number(categoryFilter), cats)
+      : undefined;
+
+  const { data: allEquipments, isLoading } = useListEquipment({
+    search: search || undefined,
+  });
+
+  const equipments = allEquipments?.filter((eq) => {
+    if (!filterCategoryIds) return true;
+    return filterCategoryIds.includes((eq as any).category_id ?? -1);
+  });
+
   const { data: suppliers } = useListSuppliers();
 
   const createEquipment = useCreateEquipment();
@@ -405,18 +467,24 @@ export default function EquipmentList() {
 
   const handleAddCategory = () => {
     if (!newCatName.trim()) return;
-    createCategory.mutate({ data: { name: newCatName.trim() } }, {
+    createCategory.mutate({
+      data: {
+        name: newCatName.trim(),
+        parent_id: newCatParentId && newCatParentId !== "none" ? Number(newCatParentId) : null,
+      },
+    }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["listEquipmentCategories"] });
         setNewCatName("");
+        setNewCatParentId("none");
         setIsCatOpen(false);
         toast({ title: "دسته‌بندی اضافه شد" });
       },
     });
   };
 
-  const cats = categories ?? [];
   const sups = suppliers ?? [];
+  const treeForFilter = buildCategoryTree(cats);
 
   return (
     <div className="space-y-5">
@@ -430,10 +498,34 @@ export default function EquipmentList() {
             <DialogTrigger asChild>
               <Button variant="outline"><Tag className="h-4 w-4 ml-1" /> دسته‌بندی جدید</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[360px]">
+            <DialogContent className="sm:max-w-[380px]">
               <DialogHeader><DialogTitle>دسته‌بندی جدید</DialogTitle></DialogHeader>
               <div className="space-y-4 mt-2">
-                <Input placeholder="نام دسته (مثلاً: اینورتر)" value={newCatName} onChange={(e) => setNewCatName(e.target.value)} />
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">نام دسته</label>
+                  <Input placeholder="مثلاً: اینورتر" value={newCatName} onChange={(e) => setNewCatName(e.target.value)} />
+                </div>
+                {cats.length > 0 && (
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">زیردسته‌ی (اختیاری)</label>
+                    <Select value={newCatParentId} onValueChange={setNewCatParentId}>
+                      <SelectTrigger className="dir-rtl">
+                        <SelectValue placeholder="دسته والد" />
+                      </SelectTrigger>
+                      <SelectContent className="dir-rtl">
+                        <SelectItem value="none">سطح اول (بدون والد)</SelectItem>
+                        {treeForFilter.map((c) => (
+                          <SelectItem key={c.id} value={String(c.id)}>
+                            <span style={{ paddingRight: `${c.depth * 14}px` }} className="inline-flex items-center gap-1">
+                              {c.depth > 0 && <ChevronLeft className="h-3 w-3 text-muted-foreground shrink-0" />}
+                              {c.name}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div className="flex justify-end">
                   <Button onClick={handleAddCategory} disabled={createCategory.isPending || !newCatName.trim()}>ثبت</Button>
                 </div>
@@ -489,11 +581,16 @@ export default function EquipmentList() {
           />
         </div>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-48 dir-rtl"><SelectValue placeholder="همه دسته‌ها" /></SelectTrigger>
+          <SelectTrigger className="w-56 dir-rtl"><SelectValue placeholder="همه دسته‌ها" /></SelectTrigger>
           <SelectContent className="dir-rtl">
             <SelectItem value="all">همه دسته‌ها</SelectItem>
-            {cats.map((c) => (
-              <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+            {treeForFilter.map((c) => (
+              <SelectItem key={c.id} value={String(c.id)}>
+                <span style={{ paddingRight: `${c.depth * 14}px` }} className="inline-flex items-center gap-1">
+                  {c.depth > 0 && <ChevronLeft className="h-3 w-3 text-muted-foreground shrink-0" />}
+                  {c.name}
+                </span>
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -504,7 +601,7 @@ export default function EquipmentList() {
           <TableHeader>
             <TableRow className="bg-muted/40">
               <TableHead className="font-semibold text-right pr-4">نام تجهیز</TableHead>
-              <TableHead className="font-semibold text-center w-32">دسته</TableHead>
+              <TableHead className="font-semibold text-center w-36">دسته</TableHead>
               <TableHead className="font-semibold text-center w-36">برند پیش‌فرض</TableHead>
               <TableHead className="font-semibold text-center w-36">قیمت فروش</TableHead>
               <TableHead className="font-semibold text-center w-24">عملیات</TableHead>

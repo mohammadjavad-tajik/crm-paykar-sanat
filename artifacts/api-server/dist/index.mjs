@@ -38115,26 +38115,31 @@ var DeleteSupplierResponse = voidType();
 var ListEquipmentCategoriesResponseItem = objectType({
   "id": numberType(),
   "name": stringType(),
+  "parent_id": numberType().nullable().optional(),
   "created_at": stringType()
 });
 var ListEquipmentCategoriesResponse = arrayType(ListEquipmentCategoriesResponseItem);
 var CreateEquipmentCategoryBody = objectType({
-  "name": stringType()
+  "name": stringType(),
+  "parent_id": numberType().nullable().optional()
 });
 var CreateEquipmentCategoryResponse = objectType({
   "id": numberType(),
   "name": stringType(),
+  "parent_id": numberType().nullable().optional(),
   "created_at": stringType()
 });
 var UpdateEquipmentCategoryParams = objectType({
   "id": coerce.number()
 });
 var UpdateEquipmentCategoryBody = objectType({
-  "name": stringType()
+  "name": stringType(),
+  "parent_id": numberType().nullable().optional()
 });
 var UpdateEquipmentCategoryResponse = objectType({
   "id": numberType(),
   "name": stringType(),
+  "parent_id": numberType().nullable().optional(),
   "created_at": stringType()
 });
 var DeleteEquipmentCategoryParams = objectType({
@@ -56451,6 +56456,7 @@ var insertSupplierSchema = createInsertSchema(suppliersTable).omit({ id: true, c
 var equipmentCategoriesTable = pgTable("equipment_categories", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
+  parent_id: integer("parent_id"),
   created_at: timestamp("created_at").notNull().defaultNow()
 });
 var insertEquipmentCategorySchema = createInsertSchema(equipmentCategoriesTable).omit({ id: true, created_at: true });
@@ -57052,18 +57058,21 @@ router9.get("/equipment-categories", async (req, res) => {
   res.json(rows);
 });
 router9.post("/equipment-categories", async (req, res) => {
-  const { name } = req.body;
+  const { name, parent_id } = req.body;
   if (!name) {
     res.status(400).json({ error: "name required" });
     return;
   }
-  const [row] = await db.insert(equipmentCategoriesTable).values({ name }).returning();
+  const [row] = await db.insert(equipmentCategoriesTable).values({ name, parent_id: parent_id ?? null }).returning();
   res.status(201).json(row);
 });
 router9.patch("/equipment-categories/:id", async (req, res) => {
   const id = Number(req.params.id);
-  const { name } = req.body;
-  const [row] = await db.update(equipmentCategoriesTable).set({ name }).where(eq(equipmentCategoriesTable.id, id)).returning();
+  const { name, parent_id } = req.body;
+  const updateData = {};
+  if (name !== void 0) updateData.name = name;
+  if (parent_id !== void 0) updateData.parent_id = parent_id ?? null;
+  const [row] = await db.update(equipmentCategoriesTable).set(updateData).where(eq(equipmentCategoriesTable.id, id)).returning();
   if (!row) {
     res.status(404).json({ error: "Not found" });
     return;
@@ -57088,16 +57097,21 @@ router9.get("/equipment", async (req, res) => {
     description: equipmentTable.description,
     created_at: equipmentTable.created_at
   }).from(equipmentTable).leftJoin(equipmentCategoriesTable, eq(equipmentTable.category_id, equipmentCategoriesTable.id)).where(conditions.length > 0 ? and(...conditions) : void 0).orderBy(desc(equipmentTable.created_at));
+  const enriched = await Promise.all(rows.map((r) => enrichEquipment(r)));
   if (search) {
     const lower = search.toLowerCase();
-    rows = rows.filter((r) => {
+    const filtered = enriched.filter((r) => {
       if (r.name.toLowerCase().includes(lower)) return true;
       if (r.category_name?.toLowerCase().includes(lower)) return true;
       const specs = r.specs ?? [];
-      return specs.some((s) => s.key.toLowerCase().includes(lower) || s.value.toLowerCase().includes(lower));
+      if (specs.some((s) => s.key.toLowerCase().includes(lower) || s.value.toLowerCase().includes(lower))) return true;
+      if (r.default_brand?.toLowerCase().includes(lower)) return true;
+      if (r.default_supplier_name?.toLowerCase().includes(lower)) return true;
+      return false;
     });
+    res.json(filtered);
+    return;
   }
-  const enriched = await Promise.all(rows.map((r) => enrichEquipment(r)));
   res.json(enriched);
 });
 router9.post("/equipment", async (req, res) => {

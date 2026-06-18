@@ -434,6 +434,15 @@ export default function InvoiceForm() {
       })),
     };
 
+    if (!payload.customer_id) {
+      toast({ title: "لطفاً مشتری را انتخاب کنید", variant: "destructive" });
+      return;
+    }
+    if (payload.items.length === 0) {
+      toast({ title: "حداقل یک قلم به فاکتور اضافه کنید", variant: "destructive" });
+      return;
+    }
+
     if (isEdit) {
       updateInvoice.mutate(
         { id: invoiceId, data: payload },
@@ -442,6 +451,9 @@ export default function InvoiceForm() {
             queryClient.invalidateQueries({ queryKey: getListInvoicesQueryKey() });
             toast({ title: "فاکتور ویرایش شد" });
             setLocation(`/invoices/${invoiceId}`);
+          },
+          onError: (err: any) => {
+            toast({ title: "خطا در ویرایش فاکتور", description: err?.message ?? "مشکلی پیش آمد", variant: "destructive" });
           },
         }
       );
@@ -453,6 +465,9 @@ export default function InvoiceForm() {
             queryClient.invalidateQueries({ queryKey: getListInvoicesQueryKey() });
             toast({ title: "فاکتور ایجاد شد" });
             setLocation(`/invoices/${newInvoice.id}`);
+          },
+          onError: (err: any) => {
+            toast({ title: "خطا در ثبت فاکتور", description: err?.message ?? "مشکلی پیش آمد", variant: "destructive" });
           },
         }
       );
