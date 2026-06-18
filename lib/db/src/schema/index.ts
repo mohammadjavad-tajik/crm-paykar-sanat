@@ -2,3 +2,8 @@ export * from "./customers";
 export * from "./jobs";
 export * from "./invoices";
 export * from "./settings";
+export * from "./suppliers";
+export * from "./equipment_categories";
+export * from "./equipment";
+export * from "./equipment_suppliers";
+export * from "./panels";

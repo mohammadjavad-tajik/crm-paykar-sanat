@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, Briefcase, FileText, Settings, Lock, Menu } from "lucide-react";
+import { LayoutDashboard, Users, Briefcase, FileText, Settings, Lock, Menu, Truck, Cpu, PanelTop } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLock } from "@/contexts/LockContext";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,9 @@ const navigation = [
   { name: "مشتریان", href: "/customers", icon: Users },
   { name: "کارها", href: "/jobs", icon: Briefcase },
   { name: "فاکتورها", href: "/invoices", icon: FileText },
+  { name: "تامین‌کنندگان", href: "/suppliers", icon: Truck },
+  { name: "تجهیزات", href: "/equipment", icon: Cpu },
+  { name: "تابلوها", href: "/panels", icon: PanelTop },
   { name: "تنظیمات", href: "/settings", icon: Settings },
 ];
 

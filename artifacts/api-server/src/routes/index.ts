@@ -6,6 +6,9 @@ import invoicesRouter from "./invoices";
 import settingsRouter from "./settings";
 import dashboardRouter from "./dashboard";
 import backupRouter from "./backup";
+import suppliersRouter from "./suppliers";
+import equipmentRouter from "./equipment";
+import panelsRouter from "./panels";
 
 const router: IRouter = Router();
 
@@ -16,5 +19,8 @@ router.use(invoicesRouter);
 router.use(settingsRouter);
 router.use(dashboardRouter);
 router.use(backupRouter);
+router.use(suppliersRouter);
+router.use(equipmentRouter);
+router.use(panelsRouter);
 
 export default router;

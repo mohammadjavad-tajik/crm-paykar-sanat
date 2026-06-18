@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useGetDashboardStats, useCompleteJob, useDeleteJob, getListJobsQueryKey } from "@workspace/api-client-react";
-import { Users, Briefcase, FileText, TrendingUp, Clock, Calendar, Phone, Trash2, Check, FilePlus } from "lucide-react";
+import { Users, Briefcase, FileText, TrendingUp, Clock, Calendar, Phone, Trash2, Check, FilePlus, BarChart2, DollarSign } from "lucide-react";
 import { formatPersianNumber, formatJalaliDate, formatJalaliTime } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -52,12 +52,14 @@ export default function Dashboard() {
         <p className="text-muted-foreground text-sm mt-1">خلاصه وضعیت سیستم</p>
       </div>
 
-      {/* Stat cards - 2 col on mobile, 4 col on desktop */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      {/* Stat cards - 2 col on mobile, 3 col on md, 6 col on desktop */}
+      <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         <StatCard title="تعداد مشتریان" value={isLoading ? undefined : stats?.total_customers} icon={Users} iconBg="bg-blue-50" iconColor="text-blue-500" valueColor="text-blue-600" borderHover="hover:border-blue-300" isLoading={isLoading} />
-        <StatCard title="فاکتورهای پرداخت‌نشده" value={isLoading ? undefined : stats?.total_unpaid_invoices} icon={FileText} iconBg="bg-red-50" iconColor="text-red-500" valueColor="text-red-600" borderHover="hover:border-red-300" isLoading={isLoading} />
+        <StatCard title="فاکتور پرداخت‌نشده" value={isLoading ? undefined : stats?.total_unpaid_invoices} icon={FileText} iconBg="bg-red-50" iconColor="text-red-500" valueColor="text-red-600" borderHover="hover:border-red-300" isLoading={isLoading} />
         <StatCard title="مجموع مطالبات" value={isLoading ? undefined : stats?.total_unpaid_amount} icon={TrendingUp} iconBg="bg-orange-50" iconColor="text-orange-500" valueColor="text-green-600" borderHover="hover:border-orange-300" isLoading={isLoading} isCurrency />
         <StatCard title="کارهای در انتظار" value={isLoading ? undefined : stats?.total_pending_jobs} icon={Clock} iconBg="bg-teal-50" iconColor="text-teal-500" valueColor="text-teal-600" borderHover="hover:border-teal-300" isLoading={isLoading} />
+        <StatCard title="فاکتور این ماه" value={isLoading ? undefined : stats?.monthly_invoice_count} icon={BarChart2} iconBg="bg-violet-50" iconColor="text-violet-500" valueColor="text-violet-600" borderHover="hover:border-violet-300" isLoading={isLoading} />
+        <StatCard title="فروش این ماه" value={isLoading ? undefined : stats?.monthly_sales_amount} icon={DollarSign} iconBg="bg-emerald-50" iconColor="text-emerald-500" valueColor="text-emerald-600" borderHover="hover:border-emerald-300" isLoading={isLoading} isCurrency />
       </div>
 
       {/* Post-complete dialog */}
@@ -121,7 +123,6 @@ export default function Dashboard() {
                   className="bg-card rounded-xl border border-card-border shadow-sm p-4 flex flex-col gap-3 hover:shadow-md transition-shadow"
                   data-testid={`card-dashboard-job-${j.id}`}
                 >
-                  {/* Header: customer name (right) + phone (left) — same as JobsList pending card */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
                       {j.customer_name || "—"}
@@ -134,12 +135,10 @@ export default function Dashboard() {
                     )}
                   </div>
 
-                  {/* Description box */}
                   <div className="bg-muted/50 rounded-lg px-3 py-2 text-sm text-foreground min-h-[36px]">
                     {j.description}
                   </div>
 
-                  {/* Date + time row */}
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
@@ -151,7 +150,6 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  {/* Actions row */}
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline" size="icon"

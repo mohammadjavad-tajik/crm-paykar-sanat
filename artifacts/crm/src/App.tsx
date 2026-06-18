@@ -15,6 +15,9 @@ import InvoiceForm from "@/pages/InvoiceForm";
 import InvoiceDetail from "@/pages/InvoiceDetail";
 import Settings from "@/pages/Settings";
 import LockScreen from "@/pages/LockScreen";
+import SuppliersList from "@/pages/SuppliersList";
+import EquipmentList from "@/pages/EquipmentList";
+import PanelsList from "@/pages/PanelsList";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +48,9 @@ function Router() {
             <Route path="/invoices/:id" component={InvoiceDetail} />
             <Route path="/invoices" component={InvoicesList} />
             <Route path="/settings" component={Settings} />
+            <Route path="/suppliers" component={SuppliersList} />
+            <Route path="/equipment" component={EquipmentList} />
+            <Route path="/panels" component={PanelsList} />
             <Route component={NotFound} />
           </Switch>
         </AppLayout>

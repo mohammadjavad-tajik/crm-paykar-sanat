@@ -16903,7 +16903,7 @@ var require_get_intrinsic = __commonJS({
     var abs = require_abs();
     var floor = require_floor();
     var max = require_max();
-    var min = require_min();
+    var min2 = require_min();
     var pow = require_pow();
     var round = require_round();
     var sign = require_sign();
@@ -17017,7 +17017,7 @@ var require_get_intrinsic = __commonJS({
       "%Math.abs%": abs,
       "%Math.floor%": floor,
       "%Math.max%": max,
-      "%Math.min%": min,
+      "%Math.min%": min2,
       "%Math.pow%": pow,
       "%Math.round%": round,
       "%Math.sign%": sign,
@@ -20651,27 +20651,27 @@ var require_router = __commonJS({
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
-    module.exports = Router9;
+    module.exports = Router12;
     module.exports.Route = Route;
-    function Router9(options) {
-      if (!(this instanceof Router9)) {
-        return new Router9(options);
+    function Router12(options) {
+      if (!(this instanceof Router12)) {
+        return new Router12(options);
       }
       const opts = options || {};
-      function router9(req, res, next) {
-        router9.handle(req, res, next);
+      function router12(req, res, next) {
+        router12.handle(req, res, next);
       }
-      Object.setPrototypeOf(router9, this);
-      router9.caseSensitive = opts.caseSensitive;
-      router9.mergeParams = opts.mergeParams;
-      router9.params = {};
-      router9.strict = opts.strict;
-      router9.stack = [];
-      return router9;
+      Object.setPrototypeOf(router12, this);
+      router12.caseSensitive = opts.caseSensitive;
+      router12.mergeParams = opts.mergeParams;
+      router12.params = {};
+      router12.strict = opts.strict;
+      router12.stack = [];
+      return router12;
     }
-    Router9.prototype = function() {
+    Router12.prototype = function() {
     };
-    Router9.prototype.param = function param(name, fn) {
+    Router12.prototype.param = function param(name, fn) {
       if (!name) {
         throw new TypeError("argument name is required");
       }
@@ -20691,7 +20691,7 @@ var require_router = __commonJS({
       params.push(fn);
       return this;
     };
-    Router9.prototype.handle = function handle(req, res, callback) {
+    Router12.prototype.handle = function handle(req, res, callback) {
       if (!callback) {
         throw new TypeError("argument callback is required");
       }
@@ -20818,7 +20818,7 @@ var require_router = __commonJS({
         }
       }
     };
-    Router9.prototype.use = function use(handler) {
+    Router12.prototype.use = function use(handler) {
       let offset = 0;
       let path = "/";
       if (typeof handler !== "function") {
@@ -20851,7 +20851,7 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router9.prototype.route = function route(path) {
+    Router12.prototype.route = function route(path) {
       const route2 = new Route(path);
       const layer = new Layer(path, {
         sensitive: this.caseSensitive,
@@ -20866,7 +20866,7 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router9.prototype[method] = function(path) {
+      Router12.prototype[method] = function(path) {
         const route = this.route(path);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
@@ -21049,13 +21049,13 @@ var require_application = __commonJS({
     var compileTrust = require_utils3().compileTrust;
     var resolve = __require("node:path").resolve;
     var once = require_once();
-    var Router9 = require_router();
+    var Router12 = require_router();
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var app2 = exports = module.exports = {};
     var trustProxyDefaultSymbol = "@@symbol:trust_proxy_default";
     app2.init = function init() {
-      var router9 = null;
+      var router12 = null;
       this.cache = /* @__PURE__ */ Object.create(null);
       this.engines = /* @__PURE__ */ Object.create(null);
       this.settings = /* @__PURE__ */ Object.create(null);
@@ -21064,13 +21064,13 @@ var require_application = __commonJS({
         configurable: true,
         enumerable: true,
         get: function getrouter() {
-          if (router9 === null) {
-            router9 = new Router9({
+          if (router12 === null) {
+            router12 = new Router12({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
           }
-          return router9;
+          return router12;
         }
       });
     };
@@ -21141,15 +21141,15 @@ var require_application = __commonJS({
       if (fns.length === 0) {
         throw new TypeError("app.use() requires a middleware function");
       }
-      var router9 = this.router;
+      var router12 = this.router;
       fns.forEach(function(fn2) {
         if (!fn2 || !fn2.handle || !fn2.set) {
-          return router9.use(path, fn2);
+          return router12.use(path, fn2);
         }
         debug(".use app under %s", path);
         fn2.mountpath = path;
         fn2.parent = this;
-        router9.use(path, function mounted_app(req, res, next) {
+        router12.use(path, function mounted_app(req, res, next) {
           var orig = req.app;
           fn2.handle(req, res, function(err) {
             Object.setPrototypeOf(req, orig.request);
@@ -22475,12 +22475,12 @@ var require_cookie = __commonJS({
       } while (++index < max);
       return max;
     }
-    function endIndex(str, index, min) {
-      while (index > min) {
+    function endIndex(str, index, min2) {
+      while (index > min2) {
         var code = str.charCodeAt(--index);
         if (code !== 32 && code !== 9) return index + 1;
       }
-      return min;
+      return min2;
     }
     function serialize(name, val, opt) {
       var enc = opt && opt.encode || encodeURIComponent;
@@ -23722,7 +23722,7 @@ var require_express = __commonJS({
     var EventEmitter = __require("node:events").EventEmitter;
     var mixin = require_merge_descriptors();
     var proto = require_application();
-    var Router9 = require_router();
+    var Router12 = require_router();
     var req = require_request();
     var res = require_response();
     exports = module.exports = createApplication;
@@ -23744,8 +23744,8 @@ var require_express = __commonJS({
     exports.application = proto;
     exports.request = req;
     exports.response = res;
-    exports.Route = Router9.Route;
-    exports.Router = Router9;
+    exports.Route = Router12.Route;
+    exports.Router = Router12;
     exports.json = bodyParser.json;
     exports.raw = bodyParser.raw;
     exports.static = require_serve_static();
@@ -33691,12 +33691,12 @@ var require_lib5 = __commonJS({
 });
 
 // src/app.ts
-var import_express9 = __toESM(require_express2(), 1);
+var import_express12 = __toESM(require_express2(), 1);
 var import_cors = __toESM(require_lib3(), 1);
 var import_pino_http = __toESM(require_logger(), 1);
 
 // src/routes/index.ts
-var import_express8 = __toESM(require_express2(), 1);
+var import_express11 = __toESM(require_express2(), 1);
 
 // src/routes/health.ts
 var import_express = __toESM(require_express2(), 1);
@@ -35117,14 +35117,14 @@ var ZodString = class _ZodString2 extends ZodType {
     return !!this._def.checks.find((ch) => ch.kind === "base64url");
   }
   get minLength() {
-    let min = null;
+    let min2 = null;
     for (const ch of this._def.checks) {
       if (ch.kind === "min") {
-        if (min === null || ch.value > min)
-          min = ch.value;
+        if (min2 === null || ch.value > min2)
+          min2 = ch.value;
       }
     }
-    return min;
+    return min2;
   }
   get maxLength() {
     let max = null;
@@ -35338,14 +35338,14 @@ var ZodNumber = class _ZodNumber extends ZodType {
     });
   }
   get minValue() {
-    let min = null;
+    let min2 = null;
     for (const ch of this._def.checks) {
       if (ch.kind === "min") {
-        if (min === null || ch.value > min)
-          min = ch.value;
+        if (min2 === null || ch.value > min2)
+          min2 = ch.value;
       }
     }
-    return min;
+    return min2;
   }
   get maxValue() {
     let max = null;
@@ -35362,19 +35362,19 @@ var ZodNumber = class _ZodNumber extends ZodType {
   }
   get isFinite() {
     let max = null;
-    let min = null;
+    let min2 = null;
     for (const ch of this._def.checks) {
       if (ch.kind === "finite" || ch.kind === "int" || ch.kind === "multipleOf") {
         return true;
       } else if (ch.kind === "min") {
-        if (min === null || ch.value > min)
-          min = ch.value;
+        if (min2 === null || ch.value > min2)
+          min2 = ch.value;
       } else if (ch.kind === "max") {
         if (max === null || ch.value < max)
           max = ch.value;
       }
     }
-    return Number.isFinite(min) && Number.isFinite(max);
+    return Number.isFinite(min2) && Number.isFinite(max);
   }
 };
 ZodNumber.create = (params) => {
@@ -35529,14 +35529,14 @@ var ZodBigInt = class _ZodBigInt extends ZodType {
     });
   }
   get minValue() {
-    let min = null;
+    let min2 = null;
     for (const ch of this._def.checks) {
       if (ch.kind === "min") {
-        if (min === null || ch.value > min)
-          min = ch.value;
+        if (min2 === null || ch.value > min2)
+          min2 = ch.value;
       }
     }
-    return min;
+    return min2;
   }
   get maxValue() {
     let max = null;
@@ -35663,14 +35663,14 @@ var ZodDate = class _ZodDate extends ZodType {
     });
   }
   get minDate() {
-    let min = null;
+    let min2 = null;
     for (const ch of this._def.checks) {
       if (ch.kind === "min") {
-        if (min === null || ch.value > min)
-          min = ch.value;
+        if (min2 === null || ch.value > min2)
+          min2 = ch.value;
       }
     }
-    return min != null ? new Date(min) : null;
+    return min2 != null ? new Date(min2) : null;
   }
   get maxDate() {
     let max = null;
@@ -37611,6 +37611,15 @@ var CreateCustomerBody = objectType({
   "description": stringType().optional(),
   "initial_balance": numberType().optional()
 });
+var CreateCustomerResponse = objectType({
+  "id": numberType(),
+  "name": stringType(),
+  "phone": stringType(),
+  "address": stringType().nullish(),
+  "description": stringType().nullish(),
+  "initial_balance": numberType().optional(),
+  "created_at": stringType()
+});
 var GetCustomerParams = objectType({
   "id": coerce.number()
 });
@@ -37645,6 +37654,7 @@ var UpdateCustomerResponse = objectType({
 var DeleteCustomerParams = objectType({
   "id": coerce.number()
 });
+var DeleteCustomerResponse = voidType();
 var GetCustomerProfileParams = objectType({
   "id": coerce.number()
 });
@@ -37662,8 +37672,11 @@ var GetCustomerProfileResponse = objectType({
     "id": numberType(),
     "customer_id": numberType(),
     "customer_name": stringType().nullish(),
+    "customer_phone": stringType().nullish(),
     "description": stringType(),
     "status": enumType(["pending", "completed"]),
+    "scheduled_date": stringType().nullish(),
+    "scheduled_time": stringType().nullish(),
     "created_at": stringType(),
     "completed_at": stringType().nullish()
   })),
@@ -37677,7 +37690,11 @@ var GetCustomerProfileResponse = objectType({
     "items": arrayType(objectType({
       "title": stringType(),
       "quantity": numberType(),
-      "unit_price": numberType()
+      "unit_price": numberType(),
+      "brand": stringType().nullish(),
+      "equipment_id": numberType().nullish(),
+      "supplier_id": numberType().nullish(),
+      "purchase_price": numberType().nullish()
     })),
     "notes": stringType().nullish(),
     "discount": numberType().optional(),
@@ -37695,8 +37712,11 @@ var ListJobsResponseItem = objectType({
   "id": numberType(),
   "customer_id": numberType(),
   "customer_name": stringType().nullish(),
+  "customer_phone": stringType().nullish(),
   "description": stringType(),
   "status": enumType(["pending", "completed"]),
+  "scheduled_date": stringType().nullish(),
+  "scheduled_time": stringType().nullish(),
   "created_at": stringType(),
   "completed_at": stringType().nullish()
 });
@@ -37704,9 +37724,19 @@ var ListJobsResponse = arrayType(ListJobsResponseItem);
 var CreateJobBody = objectType({
   "customer_id": numberType(),
   "description": stringType(),
-  "status": enumType(["pending", "completed"]).optional(),
-  "scheduled_date": stringType().optional(),
-  "scheduled_time": stringType().optional()
+  "status": enumType(["pending", "completed"]).optional()
+});
+var CreateJobResponse = objectType({
+  "id": numberType(),
+  "customer_id": numberType(),
+  "customer_name": stringType().nullish(),
+  "customer_phone": stringType().nullish(),
+  "description": stringType(),
+  "status": enumType(["pending", "completed"]),
+  "scheduled_date": stringType().nullish(),
+  "scheduled_time": stringType().nullish(),
+  "created_at": stringType(),
+  "completed_at": stringType().nullish()
 });
 var GetJobParams = objectType({
   "id": coerce.number()
@@ -37715,8 +37745,11 @@ var GetJobResponse = objectType({
   "id": numberType(),
   "customer_id": numberType(),
   "customer_name": stringType().nullish(),
+  "customer_phone": stringType().nullish(),
   "description": stringType(),
   "status": enumType(["pending", "completed"]),
+  "scheduled_date": stringType().nullish(),
+  "scheduled_time": stringType().nullish(),
   "created_at": stringType(),
   "completed_at": stringType().nullish()
 });
@@ -37725,22 +37758,24 @@ var UpdateJobParams = objectType({
 });
 var UpdateJobBody = objectType({
   "description": stringType().optional(),
-  "status": enumType(["pending", "completed"]).optional(),
-  "scheduled_date": stringType().optional(),
-  "scheduled_time": stringType().optional()
+  "status": enumType(["pending", "completed"]).optional()
 });
 var UpdateJobResponse = objectType({
   "id": numberType(),
   "customer_id": numberType(),
   "customer_name": stringType().nullish(),
+  "customer_phone": stringType().nullish(),
   "description": stringType(),
   "status": enumType(["pending", "completed"]),
+  "scheduled_date": stringType().nullish(),
+  "scheduled_time": stringType().nullish(),
   "created_at": stringType(),
   "completed_at": stringType().nullish()
 });
 var DeleteJobParams = objectType({
   "id": coerce.number()
 });
+var DeleteJobResponse = voidType();
 var CompleteJobParams = objectType({
   "id": coerce.number()
 });
@@ -37748,8 +37783,11 @@ var CompleteJobResponse = objectType({
   "id": numberType(),
   "customer_id": numberType(),
   "customer_name": stringType().nullish(),
+  "customer_phone": stringType().nullish(),
   "description": stringType(),
   "status": enumType(["pending", "completed"]),
+  "scheduled_date": stringType().nullish(),
+  "scheduled_time": stringType().nullish(),
   "created_at": stringType(),
   "completed_at": stringType().nullish()
 });
@@ -37767,7 +37805,11 @@ var ListInvoicesResponseItem = objectType({
   "items": arrayType(objectType({
     "title": stringType(),
     "quantity": numberType(),
-    "unit_price": numberType()
+    "unit_price": numberType(),
+    "brand": stringType().nullish(),
+    "equipment_id": numberType().nullish(),
+    "supplier_id": numberType().nullish(),
+    "purchase_price": numberType().nullish()
   })),
   "notes": stringType().nullish(),
   "discount": numberType().optional(),
@@ -37784,11 +37826,37 @@ var CreateInvoiceBody = objectType({
   "items": arrayType(objectType({
     "title": stringType(),
     "quantity": numberType(),
-    "unit_price": numberType()
+    "unit_price": numberType(),
+    "brand": stringType().nullish(),
+    "equipment_id": numberType().nullish(),
+    "supplier_id": numberType().nullish(),
+    "purchase_price": numberType().nullish()
   })),
   "notes": stringType().optional(),
   "discount": numberType().optional(),
   "status": enumType(["paid", "unpaid"]).optional()
+});
+var CreateInvoiceResponse = objectType({
+  "id": numberType(),
+  "customer_id": numberType(),
+  "customer_name": stringType().nullish(),
+  "job_id": numberType().nullish(),
+  "title": stringType(),
+  "date": stringType(),
+  "items": arrayType(objectType({
+    "title": stringType(),
+    "quantity": numberType(),
+    "unit_price": numberType(),
+    "brand": stringType().nullish(),
+    "equipment_id": numberType().nullish(),
+    "supplier_id": numberType().nullish(),
+    "purchase_price": numberType().nullish()
+  })),
+  "notes": stringType().nullish(),
+  "discount": numberType().optional(),
+  "total_amount": numberType(),
+  "status": enumType(["paid", "unpaid"]),
+  "created_at": stringType()
 });
 var GetInvoiceParams = objectType({
   "id": coerce.number()
@@ -37803,7 +37871,11 @@ var GetInvoiceResponse = objectType({
   "items": arrayType(objectType({
     "title": stringType(),
     "quantity": numberType(),
-    "unit_price": numberType()
+    "unit_price": numberType(),
+    "brand": stringType().nullish(),
+    "equipment_id": numberType().nullish(),
+    "supplier_id": numberType().nullish(),
+    "purchase_price": numberType().nullish()
   })),
   "notes": stringType().nullish(),
   "discount": numberType().optional(),
@@ -37822,7 +37894,11 @@ var UpdateInvoiceBody = objectType({
   "items": arrayType(objectType({
     "title": stringType(),
     "quantity": numberType(),
-    "unit_price": numberType()
+    "unit_price": numberType(),
+    "brand": stringType().nullish(),
+    "equipment_id": numberType().nullish(),
+    "supplier_id": numberType().nullish(),
+    "purchase_price": numberType().nullish()
   })).optional(),
   "notes": stringType().nullish(),
   "discount": numberType().optional(),
@@ -37838,7 +37914,11 @@ var UpdateInvoiceResponse = objectType({
   "items": arrayType(objectType({
     "title": stringType(),
     "quantity": numberType(),
-    "unit_price": numberType()
+    "unit_price": numberType(),
+    "brand": stringType().nullish(),
+    "equipment_id": numberType().nullish(),
+    "supplier_id": numberType().nullish(),
+    "purchase_price": numberType().nullish()
   })),
   "notes": stringType().nullish(),
   "discount": numberType().optional(),
@@ -37849,6 +37929,7 @@ var UpdateInvoiceResponse = objectType({
 var DeleteInvoiceParams = objectType({
   "id": coerce.number()
 });
+var DeleteInvoiceResponse = voidType();
 var PayInvoiceParams = objectType({
   "id": coerce.number()
 });
@@ -37862,7 +37943,36 @@ var PayInvoiceResponse = objectType({
   "items": arrayType(objectType({
     "title": stringType(),
     "quantity": numberType(),
-    "unit_price": numberType()
+    "unit_price": numberType(),
+    "brand": stringType().nullish(),
+    "equipment_id": numberType().nullish(),
+    "supplier_id": numberType().nullish(),
+    "purchase_price": numberType().nullish()
+  })),
+  "notes": stringType().nullish(),
+  "discount": numberType().optional(),
+  "total_amount": numberType(),
+  "status": enumType(["paid", "unpaid"]),
+  "created_at": stringType()
+});
+var CopyInvoiceParams = objectType({
+  "id": coerce.number()
+});
+var CopyInvoiceResponse = objectType({
+  "id": numberType(),
+  "customer_id": numberType(),
+  "customer_name": stringType().nullish(),
+  "job_id": numberType().nullish(),
+  "title": stringType(),
+  "date": stringType(),
+  "items": arrayType(objectType({
+    "title": stringType(),
+    "quantity": numberType(),
+    "unit_price": numberType(),
+    "brand": stringType().nullish(),
+    "equipment_id": numberType().nullish(),
+    "supplier_id": numberType().nullish(),
+    "purchase_price": numberType().nullish()
   })),
   "notes": stringType().nullish(),
   "discount": numberType().optional(),
@@ -37911,11 +38021,16 @@ var GetDashboardStatsResponse = objectType({
     "id": numberType(),
     "customer_id": numberType(),
     "customer_name": stringType().nullish(),
+    "customer_phone": stringType().nullish(),
     "description": stringType(),
     "status": enumType(["pending", "completed"]),
+    "scheduled_date": stringType().nullish(),
+    "scheduled_time": stringType().nullish(),
     "created_at": stringType(),
     "completed_at": stringType().nullish()
-  }))
+  })),
+  "monthly_invoice_count": numberType(),
+  "monthly_sales_amount": numberType()
 });
 var ExportBackupResponse = objectType({
   "customers": arrayType(objectType({}).passthrough()),
@@ -37933,6 +38048,358 @@ var ImportBackupResponse = objectType({
   "success": booleanType(),
   "message": stringType()
 });
+var ListSuppliersQueryParams = objectType({
+  "search": coerce.string().optional()
+});
+var ListSuppliersResponseItem = objectType({
+  "id": numberType(),
+  "name": stringType(),
+  "contact_person": stringType().nullish(),
+  "phone": stringType().nullish(),
+  "address": stringType().nullish(),
+  "description": stringType().nullish(),
+  "created_at": stringType()
+});
+var ListSuppliersResponse = arrayType(ListSuppliersResponseItem);
+var CreateSupplierBody = objectType({
+  "name": stringType(),
+  "contact_person": stringType().optional(),
+  "phone": stringType().optional(),
+  "address": stringType().optional(),
+  "description": stringType().optional()
+});
+var CreateSupplierResponse = objectType({
+  "id": numberType(),
+  "name": stringType(),
+  "contact_person": stringType().nullish(),
+  "phone": stringType().nullish(),
+  "address": stringType().nullish(),
+  "description": stringType().nullish(),
+  "created_at": stringType()
+});
+var GetSupplierParams = objectType({
+  "id": coerce.number()
+});
+var GetSupplierResponse = objectType({
+  "id": numberType(),
+  "name": stringType(),
+  "contact_person": stringType().nullish(),
+  "phone": stringType().nullish(),
+  "address": stringType().nullish(),
+  "description": stringType().nullish(),
+  "created_at": stringType()
+});
+var UpdateSupplierParams = objectType({
+  "id": coerce.number()
+});
+var UpdateSupplierBody = objectType({
+  "name": stringType(),
+  "contact_person": stringType().optional(),
+  "phone": stringType().optional(),
+  "address": stringType().optional(),
+  "description": stringType().optional()
+});
+var UpdateSupplierResponse = objectType({
+  "id": numberType(),
+  "name": stringType(),
+  "contact_person": stringType().nullish(),
+  "phone": stringType().nullish(),
+  "address": stringType().nullish(),
+  "description": stringType().nullish(),
+  "created_at": stringType()
+});
+var DeleteSupplierParams = objectType({
+  "id": coerce.number()
+});
+var DeleteSupplierResponse = voidType();
+var ListEquipmentCategoriesResponseItem = objectType({
+  "id": numberType(),
+  "name": stringType(),
+  "created_at": stringType()
+});
+var ListEquipmentCategoriesResponse = arrayType(ListEquipmentCategoriesResponseItem);
+var CreateEquipmentCategoryBody = objectType({
+  "name": stringType()
+});
+var CreateEquipmentCategoryResponse = objectType({
+  "id": numberType(),
+  "name": stringType(),
+  "created_at": stringType()
+});
+var UpdateEquipmentCategoryParams = objectType({
+  "id": coerce.number()
+});
+var UpdateEquipmentCategoryBody = objectType({
+  "name": stringType()
+});
+var UpdateEquipmentCategoryResponse = objectType({
+  "id": numberType(),
+  "name": stringType(),
+  "created_at": stringType()
+});
+var DeleteEquipmentCategoryParams = objectType({
+  "id": coerce.number()
+});
+var DeleteEquipmentCategoryResponse = voidType();
+var ListEquipmentQueryParams = objectType({
+  "search": coerce.string().optional(),
+  "category_id": coerce.number().optional()
+});
+var ListEquipmentResponseItem = objectType({
+  "id": numberType(),
+  "name": stringType(),
+  "category_id": numberType().nullish(),
+  "category_name": stringType().nullish(),
+  "specs": arrayType(objectType({
+    "key": stringType(),
+    "value": stringType()
+  })),
+  "description": stringType().nullish(),
+  "created_at": stringType()
+}).and(objectType({
+  "min_purchase_price": numberType().nullish(),
+  "min_sell_price": numberType().nullish(),
+  "default_supplier_name": stringType().nullish(),
+  "default_brand": stringType().nullish()
+}));
+var ListEquipmentResponse = arrayType(ListEquipmentResponseItem);
+var CreateEquipmentBody = objectType({
+  "name": stringType(),
+  "category_id": numberType().nullish(),
+  "specs": arrayType(objectType({
+    "key": stringType(),
+    "value": stringType()
+  })).optional(),
+  "description": stringType().optional()
+});
+var CreateEquipmentResponse = objectType({
+  "id": numberType(),
+  "name": stringType(),
+  "category_id": numberType().nullish(),
+  "category_name": stringType().nullish(),
+  "specs": arrayType(objectType({
+    "key": stringType(),
+    "value": stringType()
+  })),
+  "description": stringType().nullish(),
+  "created_at": stringType()
+}).and(objectType({
+  "min_purchase_price": numberType().nullish(),
+  "min_sell_price": numberType().nullish(),
+  "default_supplier_name": stringType().nullish(),
+  "default_brand": stringType().nullish()
+}));
+var GetEquipmentParams = objectType({
+  "id": coerce.number()
+});
+var GetEquipmentResponse = objectType({
+  "id": numberType(),
+  "name": stringType(),
+  "category_id": numberType().nullish(),
+  "category_name": stringType().nullish(),
+  "specs": arrayType(objectType({
+    "key": stringType(),
+    "value": stringType()
+  })),
+  "description": stringType().nullish(),
+  "created_at": stringType()
+}).and(objectType({
+  "min_purchase_price": numberType().nullish(),
+  "min_sell_price": numberType().nullish(),
+  "default_supplier_name": stringType().nullish(),
+  "default_brand": stringType().nullish()
+}));
+var UpdateEquipmentParams = objectType({
+  "id": coerce.number()
+});
+var UpdateEquipmentBody = objectType({
+  "name": stringType(),
+  "category_id": numberType().nullish(),
+  "specs": arrayType(objectType({
+    "key": stringType(),
+    "value": stringType()
+  })).optional(),
+  "description": stringType().optional()
+});
+var UpdateEquipmentResponse = objectType({
+  "id": numberType(),
+  "name": stringType(),
+  "category_id": numberType().nullish(),
+  "category_name": stringType().nullish(),
+  "specs": arrayType(objectType({
+    "key": stringType(),
+    "value": stringType()
+  })),
+  "description": stringType().nullish(),
+  "created_at": stringType()
+}).and(objectType({
+  "min_purchase_price": numberType().nullish(),
+  "min_sell_price": numberType().nullish(),
+  "default_supplier_name": stringType().nullish(),
+  "default_brand": stringType().nullish()
+}));
+var DeleteEquipmentParams = objectType({
+  "id": coerce.number()
+});
+var DeleteEquipmentResponse = voidType();
+var ListEquipmentSuppliersParams = objectType({
+  "id": coerce.number()
+});
+var ListEquipmentSuppliersResponseItem = objectType({
+  "id": numberType(),
+  "equipment_id": numberType(),
+  "supplier_id": numberType(),
+  "supplier_name": stringType().nullish(),
+  "brand": stringType().nullish(),
+  "purchase_price": numberType(),
+  "sell_price": numberType(),
+  "supplier_code": stringType().nullish(),
+  "is_default": booleanType(),
+  "notes": stringType().nullish()
+});
+var ListEquipmentSuppliersResponse = arrayType(ListEquipmentSuppliersResponseItem);
+var AddEquipmentSupplierParams = objectType({
+  "id": coerce.number()
+});
+var AddEquipmentSupplierBody = objectType({
+  "supplier_id": numberType(),
+  "brand": stringType().optional(),
+  "purchase_price": numberType(),
+  "sell_price": numberType(),
+  "supplier_code": stringType().optional(),
+  "is_default": booleanType().optional(),
+  "notes": stringType().optional()
+});
+var AddEquipmentSupplierResponse = objectType({
+  "id": numberType(),
+  "equipment_id": numberType(),
+  "supplier_id": numberType(),
+  "supplier_name": stringType().nullish(),
+  "brand": stringType().nullish(),
+  "purchase_price": numberType(),
+  "sell_price": numberType(),
+  "supplier_code": stringType().nullish(),
+  "is_default": booleanType(),
+  "notes": stringType().nullish()
+});
+var UpdateEquipmentSupplierParams = objectType({
+  "id": coerce.number(),
+  "linkId": coerce.number()
+});
+var UpdateEquipmentSupplierBody = objectType({
+  "supplier_id": numberType(),
+  "brand": stringType().optional(),
+  "purchase_price": numberType(),
+  "sell_price": numberType(),
+  "supplier_code": stringType().optional(),
+  "is_default": booleanType().optional(),
+  "notes": stringType().optional()
+});
+var UpdateEquipmentSupplierResponse = objectType({
+  "id": numberType(),
+  "equipment_id": numberType(),
+  "supplier_id": numberType(),
+  "supplier_name": stringType().nullish(),
+  "brand": stringType().nullish(),
+  "purchase_price": numberType(),
+  "sell_price": numberType(),
+  "supplier_code": stringType().nullish(),
+  "is_default": booleanType(),
+  "notes": stringType().nullish()
+});
+var DeleteEquipmentSupplierParams = objectType({
+  "id": coerce.number(),
+  "linkId": coerce.number()
+});
+var DeleteEquipmentSupplierResponse = voidType();
+var ListPanelsQueryParams = objectType({
+  "search": coerce.string().optional()
+});
+var ListPanelsResponseItem = objectType({
+  "id": numberType(),
+  "name": stringType(),
+  "description": stringType().nullish(),
+  "created_at": stringType()
+});
+var ListPanelsResponse = arrayType(ListPanelsResponseItem);
+var CreatePanelBody = objectType({
+  "name": stringType(),
+  "description": stringType().optional()
+});
+var CreatePanelResponse = objectType({
+  "id": numberType(),
+  "name": stringType(),
+  "description": stringType().nullish(),
+  "created_at": stringType()
+});
+var GetPanelParams = objectType({
+  "id": coerce.number()
+});
+var GetPanelResponse = objectType({
+  "id": numberType(),
+  "name": stringType(),
+  "description": stringType().nullish(),
+  "created_at": stringType()
+}).and(objectType({
+  "items": arrayType(objectType({
+    "id": numberType(),
+    "panel_id": numberType(),
+    "equipment_id": numberType(),
+    "equipment_name": stringType().nullish(),
+    "quantity": numberType()
+  }))
+}));
+var UpdatePanelParams = objectType({
+  "id": coerce.number()
+});
+var UpdatePanelBody = objectType({
+  "name": stringType(),
+  "description": stringType().optional()
+});
+var UpdatePanelResponse = objectType({
+  "id": numberType(),
+  "name": stringType(),
+  "description": stringType().nullish(),
+  "created_at": stringType()
+});
+var DeletePanelParams = objectType({
+  "id": coerce.number()
+});
+var DeletePanelResponse = voidType();
+var AddPanelItemParams = objectType({
+  "id": coerce.number()
+});
+var AddPanelItemBody = objectType({
+  "equipment_id": numberType(),
+  "quantity": numberType()
+});
+var AddPanelItemResponse = objectType({
+  "id": numberType(),
+  "panel_id": numberType(),
+  "equipment_id": numberType(),
+  "equipment_name": stringType().nullish(),
+  "quantity": numberType()
+});
+var UpdatePanelItemParams = objectType({
+  "id": coerce.number(),
+  "itemId": coerce.number()
+});
+var UpdatePanelItemBody = objectType({
+  "equipment_id": numberType(),
+  "quantity": numberType()
+});
+var UpdatePanelItemResponse = objectType({
+  "id": numberType(),
+  "panel_id": numberType(),
+  "equipment_id": numberType(),
+  "equipment_name": stringType().nullish(),
+  "quantity": numberType()
+});
+var DeletePanelItemParams = objectType({
+  "id": coerce.number(),
+  "itemId": coerce.number()
+});
+var DeletePanelItemResponse = voidType();
 
 // src/routes/health.ts
 var router = (0, import_express.Router)();
@@ -38607,10 +39074,10 @@ var PgEnumColumn = class extends PgColumn {
 // ../../node_modules/.pnpm/drizzle-orm@0.40.1_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/subquery.js
 var Subquery = class {
   static [entityKind] = "Subquery";
-  constructor(sql3, selection, alias, isWith = false) {
+  constructor(sql4, selection, alias, isWith = false) {
     this._ = {
       brand: "Subquery",
-      sql: sql3,
+      sql: sql4,
       selectedFields: selection,
       alias,
       isWith
@@ -41039,15 +41506,15 @@ function exists(subquery) {
 function notExists(subquery) {
   return sql`not exists ${subquery}`;
 }
-function between(column, min, max) {
-  return sql`${column} between ${bindIfParam(min, column)} and ${bindIfParam(
+function between(column, min2, max) {
+  return sql`${column} between ${bindIfParam(min2, column)} and ${bindIfParam(
     max,
     column
   )}`;
 }
-function notBetween(column, min, max) {
+function notBetween(column, min2, max) {
   return sql`${column} not between ${bindIfParam(
-    min,
+    min2,
     column
   )} and ${bindIfParam(max, column)}`;
 }
@@ -43873,10 +44340,10 @@ var PgRelationalQuery = class extends QueryPromise {
 
 // ../../node_modules/.pnpm/drizzle-orm@0.40.1_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/query-builders/raw.js
 var PgRaw = class extends QueryPromise {
-  constructor(execute, sql3, query, mapBatchResult) {
+  constructor(execute, sql4, query, mapBatchResult) {
     super();
     this.execute = execute;
-    this.sql = sql3;
+    this.sql = sql4;
     this.query = query;
     this.mapBatchResult = mapBatchResult;
   }
@@ -44506,14 +44973,26 @@ function drizzle(...params) {
 var schema_exports = {};
 __export(schema_exports, {
   customersTable: () => customersTable,
+  equipmentCategoriesTable: () => equipmentCategoriesTable,
+  equipmentSuppliersTable: () => equipmentSuppliersTable,
+  equipmentTable: () => equipmentTable,
   insertCustomerSchema: () => insertCustomerSchema,
+  insertEquipmentCategorySchema: () => insertEquipmentCategorySchema,
+  insertEquipmentSchema: () => insertEquipmentSchema,
+  insertEquipmentSupplierSchema: () => insertEquipmentSupplierSchema,
   insertInvoiceSchema: () => insertInvoiceSchema,
   insertJobSchema: () => insertJobSchema,
+  insertPanelItemSchema: () => insertPanelItemSchema,
+  insertPanelSchema: () => insertPanelSchema,
   insertSettingsSchema: () => insertSettingsSchema,
+  insertSupplierSchema: () => insertSupplierSchema,
   invoicesTable: () => invoicesTable,
   jobStatusEnum: () => jobStatusEnum,
   jobsTable: () => jobsTable,
-  settingsTable: () => settingsTable
+  panelItemsTable: () => panelItemsTable,
+  panelsTable: () => panelsTable,
+  settingsTable: () => settingsTable,
+  suppliersTable: () => suppliersTable
 });
 
 // ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v4/classic/external.js
@@ -55742,11 +56221,11 @@ function columnToSchema(column, factory) {
 }
 function numberColumnToSchema(column, z, coerce2) {
   let unsigned = column.getSQLType().includes("unsigned");
-  let min;
+  let min2;
   let max;
   let integer3 = false;
   if (isColumnType(column, ["MySqlTinyInt", "SingleStoreTinyInt"])) {
-    min = unsigned ? 0 : CONSTANTS.INT8_MIN;
+    min2 = unsigned ? 0 : CONSTANTS.INT8_MIN;
     max = unsigned ? CONSTANTS.INT8_UNSIGNED_MAX : CONSTANTS.INT8_MAX;
     integer3 = true;
   } else if (isColumnType(column, [
@@ -55755,7 +56234,7 @@ function numberColumnToSchema(column, z, coerce2) {
     "MySqlSmallInt",
     "SingleStoreSmallInt"
   ])) {
-    min = unsigned ? 0 : CONSTANTS.INT16_MIN;
+    min2 = unsigned ? 0 : CONSTANTS.INT16_MIN;
     max = unsigned ? CONSTANTS.INT16_UNSIGNED_MAX : CONSTANTS.INT16_MAX;
     integer3 = true;
   } else if (isColumnType(column, [
@@ -55765,7 +56244,7 @@ function numberColumnToSchema(column, z, coerce2) {
     "SingleStoreMediumInt",
     "SingleStoreFloat"
   ])) {
-    min = unsigned ? 0 : CONSTANTS.INT24_MIN;
+    min2 = unsigned ? 0 : CONSTANTS.INT24_MIN;
     max = unsigned ? CONSTANTS.INT24_UNSIGNED_MAX : CONSTANTS.INT24_MAX;
     integer3 = isColumnType(column, ["MySqlMediumInt", "SingleStoreMediumInt"]);
   } else if (isColumnType(column, [
@@ -55774,7 +56253,7 @@ function numberColumnToSchema(column, z, coerce2) {
     "MySqlInt",
     "SingleStoreInt"
   ])) {
-    min = unsigned ? 0 : CONSTANTS.INT32_MIN;
+    min2 = unsigned ? 0 : CONSTANTS.INT32_MIN;
     max = unsigned ? CONSTANTS.INT32_UNSIGNED_MAX : CONSTANTS.INT32_MAX;
     integer3 = true;
   } else if (isColumnType(column, [
@@ -55785,7 +56264,7 @@ function numberColumnToSchema(column, z, coerce2) {
     "SingleStoreDouble",
     "SQLiteReal"
   ])) {
-    min = unsigned ? 0 : CONSTANTS.INT48_MIN;
+    min2 = unsigned ? 0 : CONSTANTS.INT48_MIN;
     max = unsigned ? CONSTANTS.INT48_UNSIGNED_MAX : CONSTANTS.INT48_MAX;
   } else if (isColumnType(column, [
     "PgBigInt53",
@@ -55797,27 +56276,27 @@ function numberColumnToSchema(column, z, coerce2) {
     "SQLiteInteger"
   ])) {
     unsigned = unsigned || isColumnType(column, ["MySqlSerial", "SingleStoreSerial"]);
-    min = unsigned ? 0 : Number.MIN_SAFE_INTEGER;
+    min2 = unsigned ? 0 : Number.MIN_SAFE_INTEGER;
     max = Number.MAX_SAFE_INTEGER;
     integer3 = true;
   } else if (isColumnType(column, ["MySqlYear", "SingleStoreYear"])) {
-    min = 1901;
+    min2 = 1901;
     max = 2155;
     integer3 = true;
   } else {
-    min = Number.MIN_SAFE_INTEGER;
+    min2 = Number.MIN_SAFE_INTEGER;
     max = Number.MAX_SAFE_INTEGER;
   }
   let schema = coerce2 === true || coerce2?.number ? integer3 ? z.coerce.number() : z.coerce.number().int() : integer3 ? z.int() : z.number();
-  schema = schema.gte(min).lte(max);
+  schema = schema.gte(min2).lte(max);
   return schema;
 }
 function bigintColumnToSchema(column, z, coerce2) {
   const unsigned = column.getSQLType().includes("unsigned");
-  const min = unsigned ? 0n : CONSTANTS.INT64_MIN;
+  const min2 = unsigned ? 0n : CONSTANTS.INT64_MIN;
   const max = unsigned ? CONSTANTS.INT64_UNSIGNED_MAX : CONSTANTS.INT64_MAX;
   const schema = coerce2 === true || coerce2?.bigint ? z.coerce.bigint() : z.bigint();
-  return schema.gte(min).lte(max);
+  return schema.gte(min2).lte(max);
 }
 function stringColumnToSchema(column, z, coerce2) {
   if (isColumnType(column, ["PgUUID"])) {
@@ -55955,6 +56434,67 @@ var settingsTable = pgTable("settings", {
   auto_lock_minutes: integer("auto_lock_minutes").notNull().default(15)
 });
 var insertSettingsSchema = createInsertSchema(settingsTable).omit({ id: true });
+
+// ../../lib/db/src/schema/suppliers.ts
+var suppliersTable = pgTable("suppliers", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  contact_person: text("contact_person"),
+  phone: text("phone"),
+  address: text("address"),
+  description: text("description"),
+  created_at: timestamp("created_at").notNull().defaultNow()
+});
+var insertSupplierSchema = createInsertSchema(suppliersTable).omit({ id: true, created_at: true });
+
+// ../../lib/db/src/schema/equipment_categories.ts
+var equipmentCategoriesTable = pgTable("equipment_categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  created_at: timestamp("created_at").notNull().defaultNow()
+});
+var insertEquipmentCategorySchema = createInsertSchema(equipmentCategoriesTable).omit({ id: true, created_at: true });
+
+// ../../lib/db/src/schema/equipment.ts
+var equipmentTable = pgTable("equipment", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  category_id: integer("category_id").references(() => equipmentCategoriesTable.id, { onDelete: "set null" }),
+  specs: jsonb("specs").notNull().default([]),
+  description: text("description"),
+  created_at: timestamp("created_at").notNull().defaultNow()
+});
+var insertEquipmentSchema = createInsertSchema(equipmentTable).omit({ id: true, created_at: true });
+
+// ../../lib/db/src/schema/equipment_suppliers.ts
+var equipmentSuppliersTable = pgTable("equipment_suppliers", {
+  id: serial("id").primaryKey(),
+  equipment_id: integer("equipment_id").notNull().references(() => equipmentTable.id, { onDelete: "cascade" }),
+  supplier_id: integer("supplier_id").notNull().references(() => suppliersTable.id, { onDelete: "cascade" }),
+  brand: text("brand"),
+  purchase_price: numeric("purchase_price", { precision: 14, scale: 2 }).notNull().default("0"),
+  sell_price: numeric("sell_price", { precision: 14, scale: 2 }).notNull().default("0"),
+  supplier_code: text("supplier_code"),
+  is_default: boolean("is_default").notNull().default(false),
+  notes: text("notes")
+});
+var insertEquipmentSupplierSchema = createInsertSchema(equipmentSuppliersTable).omit({ id: true });
+
+// ../../lib/db/src/schema/panels.ts
+var panelsTable = pgTable("panels", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  created_at: timestamp("created_at").notNull().defaultNow()
+});
+var panelItemsTable = pgTable("panel_items", {
+  id: serial("id").primaryKey(),
+  panel_id: integer("panel_id").notNull().references(() => panelsTable.id, { onDelete: "cascade" }),
+  equipment_id: integer("equipment_id").notNull().references(() => equipmentTable.id, { onDelete: "cascade" }),
+  quantity: numeric("quantity", { precision: 10, scale: 2 }).notNull().default("1")
+});
+var insertPanelSchema = createInsertSchema(panelsTable).omit({ id: true, created_at: true });
+var insertPanelItemSchema = createInsertSchema(panelItemsTable).omit({ id: true });
 
 // ../../lib/db/src/index.ts
 var { Pool: Pool3 } = esm_default;
@@ -56262,6 +56802,27 @@ router4.patch("/invoices/:id/pay", async (req, res) => {
   const [customer] = await db.select({ name: customersTable.name }).from(customersTable).where(eq(customersTable.id, inv.customer_id));
   res.json(formatInvoice(inv, customer?.name));
 });
+router4.post("/invoices/:id/copy", async (req, res) => {
+  const id = Number(req.params.id);
+  const [source] = await db.select({ invoice: invoicesTable, customer_name: customersTable.name }).from(invoicesTable).leftJoin(customersTable, eq(invoicesTable.customer_id, customersTable.id)).where(eq(invoicesTable.id, id));
+  if (!source) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+  const [newInv] = await db.insert(invoicesTable).values({
+    customer_id: source.invoice.customer_id,
+    job_id: source.invoice.job_id,
+    title: source.invoice.title,
+    date: today,
+    items: source.invoice.items,
+    notes: source.invoice.notes,
+    discount: source.invoice.discount,
+    total_amount: source.invoice.total_amount,
+    status: "unpaid"
+  }).returning();
+  res.status(201).json(formatInvoice(newInv, source.customer_name));
+});
 var invoices_default = router4;
 
 // src/routes/settings.ts
@@ -56320,6 +56881,11 @@ router6.get("/dashboard/stats", async (req, res) => {
   const unpaidInvoices = await db.select().from(invoicesTable).where(eq(invoicesTable.status, "unpaid"));
   const total_unpaid_invoices = unpaidInvoices.length;
   const total_unpaid_amount = unpaidInvoices.reduce((sum, inv) => sum + Number(inv.total_amount), 0);
+  const now = /* @__PURE__ */ new Date();
+  const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const monthlyInvoices = await db.select().from(invoicesTable).where(gte(invoicesTable.created_at, new Date(firstOfMonth)));
+  const monthly_invoice_count = monthlyInvoices.length;
+  const monthly_sales_amount = monthlyInvoices.reduce((sum, inv) => sum + Number(inv.total_amount), 0);
   const recentJobsRaw = await db.select({ job: jobsTable, customer_name: customersTable.name, customer_phone: customersTable.phone }).from(jobsTable).leftJoin(customersTable, eq(jobsTable.customer_id, customersTable.id)).where(eq(jobsTable.status, "pending")).orderBy(desc(jobsTable.created_at)).limit(5);
   const recent_jobs = recentJobsRaw.map((r) => ({
     ...r.job,
@@ -56331,7 +56897,9 @@ router6.get("/dashboard/stats", async (req, res) => {
     total_pending_jobs,
     total_unpaid_invoices,
     total_unpaid_amount,
-    recent_jobs
+    recent_jobs,
+    monthly_invoice_count,
+    monthly_sales_amount
   });
 });
 var dashboard_default = router6;
@@ -56415,16 +56983,332 @@ router7.post("/backup/import", async (req, res) => {
 });
 var backup_default = router7;
 
-// src/routes/index.ts
+// src/routes/suppliers.ts
+var import_express8 = __toESM(require_express2(), 1);
 var router8 = (0, import_express8.Router)();
-router8.use(health_default);
-router8.use(customers_default);
-router8.use(jobs_default);
-router8.use(invoices_default);
-router8.use(settings_default);
-router8.use(dashboard_default);
-router8.use(backup_default);
-var routes_default = router8;
+router8.get("/suppliers", async (req, res) => {
+  const search = req.query.search;
+  const rows = await db.select().from(suppliersTable).where(search ? like(suppliersTable.name, `%${search}%`) : void 0).orderBy(desc(suppliersTable.created_at));
+  res.json(rows);
+});
+router8.post("/suppliers", async (req, res) => {
+  const { name, contact_person, phone, address, description } = req.body;
+  if (!name) {
+    res.status(400).json({ error: "name required" });
+    return;
+  }
+  const [row] = await db.insert(suppliersTable).values({ name, contact_person, phone, address, description }).returning();
+  res.status(201).json(row);
+});
+router8.get("/suppliers/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const [row] = await db.select().from(suppliersTable).where(eq(suppliersTable.id, id));
+  if (!row) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  res.json(row);
+});
+router8.patch("/suppliers/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const { name, contact_person, phone, address, description } = req.body;
+  const [row] = await db.update(suppliersTable).set({ name, contact_person, phone, address, description }).where(eq(suppliersTable.id, id)).returning();
+  if (!row) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  res.json(row);
+});
+router8.delete("/suppliers/:id", async (req, res) => {
+  await db.delete(suppliersTable).where(eq(suppliersTable.id, Number(req.params.id)));
+  res.status(204).send();
+});
+var suppliers_default = router8;
+
+// src/routes/equipment.ts
+var import_express9 = __toESM(require_express2(), 1);
+var router9 = (0, import_express9.Router)();
+var enrichEquipment = async (equipment) => {
+  const links = await db.select().from(equipmentSuppliersTable).leftJoin(suppliersTable, eq(equipmentSuppliersTable.supplier_id, suppliersTable.id)).where(eq(equipmentSuppliersTable.equipment_id, equipment.id));
+  const prices = links.map((l) => ({
+    purchase: Number(l.equipment_suppliers.purchase_price),
+    sell: Number(l.equipment_suppliers.sell_price),
+    is_default: l.equipment_suppliers.is_default,
+    supplier_name: l.suppliers?.name ?? null,
+    brand: l.equipment_suppliers.brand ?? null
+  }));
+  const defaultLink = links.find((l) => l.equipment_suppliers.is_default) ?? links[0];
+  return {
+    ...equipment,
+    specs: equipment.specs ?? [],
+    min_purchase_price: prices.length > 0 ? Math.min(...prices.map((p) => p.purchase)) : null,
+    min_sell_price: prices.length > 0 ? Math.min(...prices.map((p) => p.sell)) : null,
+    default_supplier_name: defaultLink?.suppliers?.name ?? null,
+    default_brand: defaultLink?.equipment_suppliers.brand ?? null
+  };
+};
+router9.get("/equipment-categories", async (req, res) => {
+  const rows = await db.select().from(equipmentCategoriesTable).orderBy(equipmentCategoriesTable.name);
+  res.json(rows);
+});
+router9.post("/equipment-categories", async (req, res) => {
+  const { name } = req.body;
+  if (!name) {
+    res.status(400).json({ error: "name required" });
+    return;
+  }
+  const [row] = await db.insert(equipmentCategoriesTable).values({ name }).returning();
+  res.status(201).json(row);
+});
+router9.patch("/equipment-categories/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const { name } = req.body;
+  const [row] = await db.update(equipmentCategoriesTable).set({ name }).where(eq(equipmentCategoriesTable.id, id)).returning();
+  if (!row) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  res.json(row);
+});
+router9.delete("/equipment-categories/:id", async (req, res) => {
+  await db.delete(equipmentCategoriesTable).where(eq(equipmentCategoriesTable.id, Number(req.params.id)));
+  res.status(204).send();
+});
+router9.get("/equipment", async (req, res) => {
+  const search = req.query.search?.trim();
+  const category_id = req.query.category_id ? Number(req.query.category_id) : void 0;
+  const conditions = [];
+  if (category_id) conditions.push(eq(equipmentTable.category_id, category_id));
+  let rows = await db.select({
+    id: equipmentTable.id,
+    name: equipmentTable.name,
+    category_id: equipmentTable.category_id,
+    category_name: equipmentCategoriesTable.name,
+    specs: equipmentTable.specs,
+    description: equipmentTable.description,
+    created_at: equipmentTable.created_at
+  }).from(equipmentTable).leftJoin(equipmentCategoriesTable, eq(equipmentTable.category_id, equipmentCategoriesTable.id)).where(conditions.length > 0 ? and(...conditions) : void 0).orderBy(desc(equipmentTable.created_at));
+  if (search) {
+    const lower = search.toLowerCase();
+    rows = rows.filter((r) => {
+      if (r.name.toLowerCase().includes(lower)) return true;
+      if (r.category_name?.toLowerCase().includes(lower)) return true;
+      const specs = r.specs ?? [];
+      return specs.some((s) => s.key.toLowerCase().includes(lower) || s.value.toLowerCase().includes(lower));
+    });
+  }
+  const enriched = await Promise.all(rows.map((r) => enrichEquipment(r)));
+  res.json(enriched);
+});
+router9.post("/equipment", async (req, res) => {
+  const { name, category_id, specs, description } = req.body;
+  if (!name) {
+    res.status(400).json({ error: "name required" });
+    return;
+  }
+  const [row] = await db.insert(equipmentTable).values({
+    name,
+    category_id: category_id ?? null,
+    specs: specs ?? [],
+    description
+  }).returning();
+  const [cat] = category_id ? await db.select().from(equipmentCategoriesTable).where(eq(equipmentCategoriesTable.id, category_id)) : [];
+  const enriched = await enrichEquipment({ ...row, category_name: cat?.name ?? null });
+  res.status(201).json(enriched);
+});
+router9.get("/equipment/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const [row] = await db.select({
+    id: equipmentTable.id,
+    name: equipmentTable.name,
+    category_id: equipmentTable.category_id,
+    category_name: equipmentCategoriesTable.name,
+    specs: equipmentTable.specs,
+    description: equipmentTable.description,
+    created_at: equipmentTable.created_at
+  }).from(equipmentTable).leftJoin(equipmentCategoriesTable, eq(equipmentTable.category_id, equipmentCategoriesTable.id)).where(eq(equipmentTable.id, id));
+  if (!row) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  const enriched = await enrichEquipment(row);
+  res.json(enriched);
+});
+router9.patch("/equipment/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const { name, category_id, specs, description } = req.body;
+  const [row] = await db.update(equipmentTable).set({
+    ...name !== void 0 && { name },
+    ...category_id !== void 0 && { category_id: category_id ?? null },
+    ...specs !== void 0 && { specs },
+    ...description !== void 0 && { description }
+  }).where(eq(equipmentTable.id, id)).returning();
+  if (!row) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  const [cat] = row.category_id ? await db.select().from(equipmentCategoriesTable).where(eq(equipmentCategoriesTable.id, row.category_id)) : [];
+  const enriched = await enrichEquipment({ ...row, category_name: cat?.name ?? null });
+  res.json(enriched);
+});
+router9.delete("/equipment/:id", async (req, res) => {
+  await db.delete(equipmentTable).where(eq(equipmentTable.id, Number(req.params.id)));
+  res.status(204).send();
+});
+router9.get("/equipment/:id/suppliers", async (req, res) => {
+  const id = Number(req.params.id);
+  const links = await db.select().from(equipmentSuppliersTable).leftJoin(suppliersTable, eq(equipmentSuppliersTable.supplier_id, suppliersTable.id)).where(eq(equipmentSuppliersTable.equipment_id, id));
+  res.json(links.map((l) => ({
+    ...l.equipment_suppliers,
+    purchase_price: Number(l.equipment_suppliers.purchase_price),
+    sell_price: Number(l.equipment_suppliers.sell_price),
+    supplier_name: l.suppliers?.name ?? null
+  })));
+});
+router9.post("/equipment/:id/suppliers", async (req, res) => {
+  const equipment_id = Number(req.params.id);
+  const { supplier_id, brand, purchase_price, sell_price, supplier_code, is_default, notes } = req.body;
+  if (!supplier_id) {
+    res.status(400).json({ error: "supplier_id required" });
+    return;
+  }
+  if (is_default) {
+    await db.update(equipmentSuppliersTable).set({ is_default: false }).where(eq(equipmentSuppliersTable.equipment_id, equipment_id));
+  }
+  const [link] = await db.insert(equipmentSuppliersTable).values({
+    equipment_id,
+    supplier_id,
+    brand,
+    purchase_price: String(purchase_price ?? 0),
+    sell_price: String(sell_price ?? 0),
+    supplier_code,
+    is_default: is_default ?? false,
+    notes
+  }).returning();
+  const [sup] = await db.select().from(suppliersTable).where(eq(suppliersTable.id, supplier_id));
+  res.status(201).json({ ...link, purchase_price: Number(link.purchase_price), sell_price: Number(link.sell_price), supplier_name: sup?.name ?? null });
+});
+router9.patch("/equipment/:id/suppliers/:linkId", async (req, res) => {
+  const equipment_id = Number(req.params.id);
+  const linkId = Number(req.params.linkId);
+  const { brand, purchase_price, sell_price, supplier_code, is_default, notes } = req.body;
+  if (is_default) {
+    await db.update(equipmentSuppliersTable).set({ is_default: false }).where(eq(equipmentSuppliersTable.equipment_id, equipment_id));
+  }
+  const updateData = {};
+  if (brand !== void 0) updateData.brand = brand;
+  if (purchase_price !== void 0) updateData.purchase_price = String(purchase_price);
+  if (sell_price !== void 0) updateData.sell_price = String(sell_price);
+  if (supplier_code !== void 0) updateData.supplier_code = supplier_code;
+  if (is_default !== void 0) updateData.is_default = is_default;
+  if (notes !== void 0) updateData.notes = notes;
+  const [link] = await db.update(equipmentSuppliersTable).set(updateData).where(eq(equipmentSuppliersTable.id, linkId)).returning();
+  if (!link) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  const [sup] = await db.select().from(suppliersTable).where(eq(suppliersTable.id, link.supplier_id));
+  res.json({ ...link, purchase_price: Number(link.purchase_price), sell_price: Number(link.sell_price), supplier_name: sup?.name ?? null });
+});
+router9.delete("/equipment/:id/suppliers/:linkId", async (req, res) => {
+  await db.delete(equipmentSuppliersTable).where(eq(equipmentSuppliersTable.id, Number(req.params.linkId)));
+  res.status(204).send();
+});
+var equipment_default = router9;
+
+// src/routes/panels.ts
+var import_express10 = __toESM(require_express2(), 1);
+var router10 = (0, import_express10.Router)();
+router10.get("/panels", async (req, res) => {
+  const search = req.query.search;
+  const rows = await db.select().from(panelsTable).where(search ? like(panelsTable.name, `%${search}%`) : void 0).orderBy(desc(panelsTable.created_at));
+  res.json(rows);
+});
+router10.post("/panels", async (req, res) => {
+  const { name, description } = req.body;
+  if (!name) {
+    res.status(400).json({ error: "name required" });
+    return;
+  }
+  const [row] = await db.insert(panelsTable).values({ name, description }).returning();
+  res.status(201).json(row);
+});
+router10.get("/panels/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const [panel] = await db.select().from(panelsTable).where(eq(panelsTable.id, id));
+  if (!panel) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  const items = await db.select().from(panelItemsTable).leftJoin(equipmentTable, eq(panelItemsTable.equipment_id, equipmentTable.id)).where(eq(panelItemsTable.panel_id, id));
+  res.json({
+    ...panel,
+    items: items.map((r) => ({
+      ...r.panel_items,
+      quantity: Number(r.panel_items.quantity),
+      equipment_name: r.equipment?.name ?? null
+    }))
+  });
+});
+router10.patch("/panels/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const { name, description } = req.body;
+  const [row] = await db.update(panelsTable).set({ name, description }).where(eq(panelsTable.id, id)).returning();
+  if (!row) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  res.json(row);
+});
+router10.delete("/panels/:id", async (req, res) => {
+  await db.delete(panelsTable).where(eq(panelsTable.id, Number(req.params.id)));
+  res.status(204).send();
+});
+router10.post("/panels/:id/items", async (req, res) => {
+  const panel_id = Number(req.params.id);
+  const { equipment_id, quantity } = req.body;
+  if (!equipment_id) {
+    res.status(400).json({ error: "equipment_id required" });
+    return;
+  }
+  const [item] = await db.insert(panelItemsTable).values({
+    panel_id,
+    equipment_id,
+    quantity: String(quantity ?? 1)
+  }).returning();
+  const [eq_row] = await db.select().from(equipmentTable).where(eq(equipmentTable.id, equipment_id));
+  res.status(201).json({ ...item, quantity: Number(item.quantity), equipment_name: eq_row?.name ?? null });
+});
+router10.patch("/panels/:id/items/:itemId", async (req, res) => {
+  const itemId = Number(req.params.itemId);
+  const { quantity } = req.body;
+  const [item] = await db.update(panelItemsTable).set({ quantity: String(quantity) }).where(eq(panelItemsTable.id, itemId)).returning();
+  if (!item) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  const [eq_row] = await db.select().from(equipmentTable).where(eq(equipmentTable.id, item.equipment_id));
+  res.json({ ...item, quantity: Number(item.quantity), equipment_name: eq_row?.name ?? null });
+});
+router10.delete("/panels/:id/items/:itemId", async (req, res) => {
+  await db.delete(panelItemsTable).where(eq(panelItemsTable.id, Number(req.params.itemId)));
+  res.status(204).send();
+});
+var panels_default = router10;
+
+// src/routes/index.ts
+var router11 = (0, import_express11.Router)();
+router11.use(health_default);
+router11.use(customers_default);
+router11.use(jobs_default);
+router11.use(invoices_default);
+router11.use(settings_default);
+router11.use(dashboard_default);
+router11.use(backup_default);
+router11.use(suppliers_default);
+router11.use(equipment_default);
+router11.use(panels_default);
+var routes_default = router11;
 
 // src/lib/logger.ts
 var import_pino = __toESM(require_pino(), 1);
@@ -56445,7 +57329,7 @@ var logger = (0, import_pino.default)({
 });
 
 // src/app.ts
-var app = (0, import_express9.default)();
+var app = (0, import_express12.default)();
 app.use(
   (0, import_pino_http.default)({
     logger,
@@ -56466,8 +57350,8 @@ app.use(
   })
 );
 app.use((0, import_cors.default)());
-app.use(import_express9.default.json());
-app.use(import_express9.default.urlencoded({ extended: true }));
+app.use(import_express12.default.json());
+app.use(import_express12.default.urlencoded({ extended: true }));
 app.use("/api", routes_default);
 var app_default = app;
 

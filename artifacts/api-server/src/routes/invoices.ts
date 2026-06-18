@@ -161,4 +161,33 @@ router.patch("/invoices/:id/pay", async (req, res) => {
   res.json(formatInvoice(inv, customer?.name));
 });
 
+router.post("/invoices/:id/copy", async (req, res) => {
+  const id = Number(req.params.id);
+  const [source] = await db
+    .select({ invoice: invoicesTable, customer_name: customersTable.name })
+    .from(invoicesTable)
+    .leftJoin(customersTable, eq(invoicesTable.customer_id, customersTable.id))
+    .where(eq(invoicesTable.id, id));
+
+  if (!source) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const [newInv] = await db.insert(invoicesTable).values({
+    customer_id: source.invoice.customer_id,
+    job_id: source.invoice.job_id,
+    title: source.invoice.title,
+    date: today,
+    items: source.invoice.items,
+    notes: source.invoice.notes,
+    discount: source.invoice.discount,
+    total_amount: source.invoice.total_amount,
+    status: "unpaid",
+  }).returning();
+
+  res.status(201).json(formatInvoice(newInv, source.customer_name));
+});
+
 export default router;

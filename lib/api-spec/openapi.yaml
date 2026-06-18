@@ -19,6 +19,12 @@ tags:
     description: Business settings
   - name: dashboard
     description: Dashboard statistics
+  - name: suppliers
+    description: Supplier management
+  - name: equipment
+    description: Equipment management
+  - name: panels
+    description: Panel templates
 paths:
   /healthz:
     get:
@@ -379,6 +385,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/Invoice"
 
+  /invoices/{id}/copy:
+    post:
+      operationId: copyInvoice
+      tags: [invoices]
+      summary: Copy an invoice
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: New copied invoice
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invoice"
+
   /settings:
     get:
       operationId: getSettings
@@ -473,6 +498,527 @@ paths:
               schema:
                 $ref: "#/components/schemas/ImportResult"
 
+  /suppliers:
+    get:
+      operationId: listSuppliers
+      tags: [suppliers]
+      summary: List all suppliers
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of suppliers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Supplier"
+    post:
+      operationId: createSupplier
+      tags: [suppliers]
+      summary: Create a new supplier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupplierInput"
+      responses:
+        "201":
+          description: Created supplier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Supplier"
+
+  /suppliers/{id}:
+    get:
+      operationId: getSupplier
+      tags: [suppliers]
+      summary: Get supplier by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Supplier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Supplier"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateSupplier
+      tags: [suppliers]
+      summary: Update a supplier
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupplierInput"
+      responses:
+        "200":
+          description: Updated supplier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Supplier"
+    delete:
+      operationId: deleteSupplier
+      tags: [suppliers]
+      summary: Delete a supplier
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /equipment-categories:
+    get:
+      operationId: listEquipmentCategories
+      tags: [equipment]
+      summary: List all equipment categories
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EquipmentCategory"
+    post:
+      operationId: createEquipmentCategory
+      tags: [equipment]
+      summary: Create a category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EquipmentCategoryInput"
+      responses:
+        "201":
+          description: Created category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EquipmentCategory"
+
+  /equipment-categories/{id}:
+    patch:
+      operationId: updateEquipmentCategory
+      tags: [equipment]
+      summary: Update a category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EquipmentCategoryInput"
+      responses:
+        "200":
+          description: Updated category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EquipmentCategory"
+    delete:
+      operationId: deleteEquipmentCategory
+      tags: [equipment]
+      summary: Delete a category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /equipment:
+    get:
+      operationId: listEquipment
+      tags: [equipment]
+      summary: List all equipment with advanced search
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: category_id
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of equipment
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EquipmentWithPrices"
+    post:
+      operationId: createEquipment
+      tags: [equipment]
+      summary: Create equipment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EquipmentInput"
+      responses:
+        "201":
+          description: Created equipment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EquipmentWithPrices"
+
+  /equipment/{id}:
+    get:
+      operationId: getEquipment
+      tags: [equipment]
+      summary: Get equipment by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Equipment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EquipmentWithPrices"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateEquipment
+      tags: [equipment]
+      summary: Update equipment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EquipmentInput"
+      responses:
+        "200":
+          description: Updated equipment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EquipmentWithPrices"
+    delete:
+      operationId: deleteEquipment
+      tags: [equipment]
+      summary: Delete equipment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /equipment/{id}/suppliers:
+    get:
+      operationId: listEquipmentSuppliers
+      tags: [equipment]
+      summary: List suppliers for equipment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of equipment-supplier links
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EquipmentSupplier"
+    post:
+      operationId: addEquipmentSupplier
+      tags: [equipment]
+      summary: Add supplier to equipment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EquipmentSupplierInput"
+      responses:
+        "201":
+          description: Created link
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EquipmentSupplier"
+
+  /equipment/{id}/suppliers/{linkId}:
+    patch:
+      operationId: updateEquipmentSupplier
+      tags: [equipment]
+      summary: Update equipment-supplier link
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EquipmentSupplierInput"
+      responses:
+        "200":
+          description: Updated link
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EquipmentSupplier"
+    delete:
+      operationId: deleteEquipmentSupplier
+      tags: [equipment]
+      summary: Delete equipment-supplier link
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /panels:
+    get:
+      operationId: listPanels
+      tags: [panels]
+      summary: List all panels
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of panels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Panel"
+    post:
+      operationId: createPanel
+      tags: [panels]
+      summary: Create a panel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PanelInput"
+      responses:
+        "201":
+          description: Created panel
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Panel"
+
+  /panels/{id}:
+    get:
+      operationId: getPanel
+      tags: [panels]
+      summary: Get panel by ID with items
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Panel with items
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PanelWithItems"
+        "404":
+          description: Not found
+    patch:
+      operationId: updatePanel
+      tags: [panels]
+      summary: Update a panel
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PanelInput"
+      responses:
+        "200":
+          description: Updated panel
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Panel"
+    delete:
+      operationId: deletePanel
+      tags: [panels]
+      summary: Delete a panel
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /panels/{id}/items:
+    post:
+      operationId: addPanelItem
+      tags: [panels]
+      summary: Add item to panel
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PanelItemInput"
+      responses:
+        "201":
+          description: Created panel item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PanelItem"
+
+  /panels/{id}/items/{itemId}:
+    patch:
+      operationId: updatePanelItem
+      tags: [panels]
+      summary: Update panel item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PanelItemInput"
+      responses:
+        "200":
+          description: Updated item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PanelItem"
+    delete:
+      operationId: deletePanelItem
+      tags: [panels]
+      summary: Delete panel item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
 components:
   schemas:
     HealthStatus:
@@ -558,11 +1104,17 @@ components:
           type: integer
         customer_name:
           type: ["string", "null"]
+        customer_phone:
+          type: ["string", "null"]
         description:
           type: string
         status:
           type: string
           enum: [pending, completed]
+        scheduled_date:
+          type: ["string", "null"]
+        scheduled_time:
+          type: ["string", "null"]
         created_at:
           type: string
         completed_at:
@@ -599,6 +1151,14 @@ components:
           type: number
         unit_price:
           type: number
+        brand:
+          type: ["string", "null"]
+        equipment_id:
+          type: ["integer", "null"]
+        supplier_id:
+          type: ["integer", "null"]
+        purchase_price:
+          type: ["number", "null"]
 
     Invoice:
       type: object
@@ -730,7 +1290,7 @@ components:
 
     DashboardStats:
       type: object
-      required: [total_customers, total_pending_jobs, total_unpaid_invoices, total_unpaid_amount, recent_jobs]
+      required: [total_customers, total_pending_jobs, total_unpaid_invoices, total_unpaid_amount, recent_jobs, monthly_invoice_count, monthly_sales_amount]
       properties:
         total_customers:
           type: integer
@@ -744,6 +1304,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Job"
+        monthly_invoice_count:
+          type: integer
+        monthly_sales_amount:
+          type: number
 
     BackupData:
       type: object
@@ -772,3 +1336,215 @@ components:
           type: boolean
         message:
           type: string
+
+    Supplier:
+      type: object
+      required: [id, name, created_at]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        contact_person:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        created_at:
+          type: string
+
+    SupplierInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        contact_person:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        description:
+          type: string
+
+    EquipmentCategory:
+      type: object
+      required: [id, name, created_at]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        created_at:
+          type: string
+
+    EquipmentCategoryInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+
+    EquipmentSpec:
+      type: object
+      required: [key, value]
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+
+    Equipment:
+      type: object
+      required: [id, name, specs, created_at]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category_id:
+          type: ["integer", "null"]
+        category_name:
+          type: ["string", "null"]
+        specs:
+          type: array
+          items:
+            $ref: "#/components/schemas/EquipmentSpec"
+        description:
+          type: ["string", "null"]
+        created_at:
+          type: string
+
+    EquipmentWithPrices:
+      allOf:
+        - $ref: "#/components/schemas/Equipment"
+        - type: object
+          properties:
+            min_purchase_price:
+              type: ["number", "null"]
+            min_sell_price:
+              type: ["number", "null"]
+            default_supplier_name:
+              type: ["string", "null"]
+            default_brand:
+              type: ["string", "null"]
+
+    EquipmentInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        category_id:
+          type: ["integer", "null"]
+        specs:
+          type: array
+          items:
+            $ref: "#/components/schemas/EquipmentSpec"
+        description:
+          type: string
+
+    EquipmentSupplier:
+      type: object
+      required: [id, equipment_id, supplier_id, purchase_price, sell_price, is_default]
+      properties:
+        id:
+          type: integer
+        equipment_id:
+          type: integer
+        supplier_id:
+          type: integer
+        supplier_name:
+          type: ["string", "null"]
+        brand:
+          type: ["string", "null"]
+        purchase_price:
+          type: number
+        sell_price:
+          type: number
+        supplier_code:
+          type: ["string", "null"]
+        is_default:
+          type: boolean
+        notes:
+          type: ["string", "null"]
+
+    EquipmentSupplierInput:
+      type: object
+      required: [supplier_id, purchase_price, sell_price]
+      properties:
+        supplier_id:
+          type: integer
+        brand:
+          type: string
+        purchase_price:
+          type: number
+        sell_price:
+          type: number
+        supplier_code:
+          type: string
+        is_default:
+          type: boolean
+        notes:
+          type: string
+
+    Panel:
+      type: object
+      required: [id, name, created_at]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        created_at:
+          type: string
+
+    PanelItem:
+      type: object
+      required: [id, panel_id, equipment_id, quantity]
+      properties:
+        id:
+          type: integer
+        panel_id:
+          type: integer
+        equipment_id:
+          type: integer
+        equipment_name:
+          type: ["string", "null"]
+        quantity:
+          type: number
+
+    PanelWithItems:
+      allOf:
+        - $ref: "#/components/schemas/Panel"
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/PanelItem"
+
+    PanelInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+
+    PanelItemInput:
+      type: object
+      required: [equipment_id, quantity]
+      properties:
+        equipment_id:
+          type: integer
+        quantity:
+          type: number
