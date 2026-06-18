@@ -537,12 +537,28 @@ export default function InvoiceForm() {
             <CardContent className="pt-6 space-y-4">
               <div className="flex justify-between items-center flex-wrap gap-2">
                 <h3 className="text-base font-bold">اقلام فاکتور</h3>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Button
                     type="button" variant="outline" size="sm"
                     onClick={() => setPanelPickerOpen(true)}
                   >
                     <PanelTop className="h-4 w-4 ml-1" /> از تابلو
+                  </Button>
+                  {/* Equipment picker - desktop */}
+                  <Button
+                    type="button" variant="outline" size="sm"
+                    className="hidden md:flex border-primary/40 text-primary hover:bg-primary/10"
+                    onClick={() => { setEqPickerForIndex(-1); setEqPickerOpen(true); }}
+                  >
+                    <Cpu className="h-4 w-4 ml-1" /> از کاتالوگ
+                  </Button>
+                  {/* Equipment picker - mobile */}
+                  <Button
+                    type="button" variant="outline" size="sm"
+                    className="md:hidden border-primary/40 text-primary hover:bg-primary/10"
+                    onClick={() => { setEqPickerForIndex(null); setEqPickerOpen(true); }}
+                  >
+                    <Cpu className="h-4 w-4 ml-1" /> از کاتالوگ
                   </Button>
                   {/* Desktop add row */}
                   <Button
@@ -568,8 +584,7 @@ export default function InvoiceForm() {
               {/* ─── Desktop table ─── */}
               <div className="hidden md:block">
                 <div className="grid grid-cols-12 gap-2 mb-2 text-xs font-medium text-muted-foreground">
-                  <div className="col-span-4 text-right">شرح کالا / خدمات</div>
-                  <div className="col-span-2 text-right">برند</div>
+                  <div className="col-span-6 text-right">شرح کالا / خدمات</div>
                   <div className="col-span-1 text-center">تعداد</div>
                   <div className="col-span-3 text-center">فی (تومان)</div>
                   <div className="col-span-2 text-center">عملیات</div>
@@ -579,17 +594,11 @@ export default function InvoiceForm() {
                 )}
                 {fields.map((field, index) => (
                   <div key={field.id} className="grid grid-cols-12 gap-2 items-center mb-3">
-                    <div className="col-span-4">
+                    <div className="col-span-6">
                       <Input
                         {...form.register(`items.${index}.title`)}
                         required
                         placeholder="شرح کالا"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <Input
-                        {...form.register(`items.${index}.brand`)}
-                        placeholder="برند"
                       />
                     </div>
                     <div className="col-span-1">
@@ -646,9 +655,6 @@ export default function InvoiceForm() {
                     >
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">{item?.title || "—"}</p>
-                        {(item as any)?.brand && (
-                          <p className="text-xs text-muted-foreground">{(item as any).brand}</p>
-                        )}
                         <p className="text-xs text-muted-foreground mt-0.5">
                           {Number(item?.quantity)} عدد × {Number(item?.unit_price).toLocaleString("fa-IR")} تومان
                         </p>
@@ -735,7 +741,19 @@ export default function InvoiceForm() {
         open={eqPickerOpen}
         onClose={() => { setEqPickerOpen(false); setEqPickerForIndex(null); }}
         onSelect={(eq, link) => {
-          if (eqPickerForIndex !== null) {
+          if (eqPickerForIndex === -1) {
+            // append new row
+            append({
+              title: eq.name,
+              quantity: 1,
+              unit_price: link?.sell_price ? Number(link.sell_price) : 0,
+              brand: link?.brand ?? (eq as any).default_brand ?? null,
+              equipment_id: eq.id,
+              supplier_id: link?.supplier_id ?? null,
+              purchase_price: link?.purchase_price ? Number(link.purchase_price) : null,
+            });
+            setEqPickerForIndex(null);
+          } else if (eqPickerForIndex !== null) {
             handleEqPickForDesktop(eqPickerForIndex, eq, link);
             setEqPickerForIndex(null);
           } else {
@@ -771,14 +789,6 @@ export default function InvoiceForm() {
                   value={itemDraft.title}
                   onChange={(e) => setItemDraft((d) => ({ ...d, title: e.target.value }))}
                   placeholder="نام محصول یا خدمات"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">برند</label>
-                <Input
-                  value={itemDraft.brand ?? ""}
-                  onChange={(e) => setItemDraft((d) => ({ ...d, brand: e.target.value }))}
-                  placeholder="مثلاً: ABB"
                 />
               </div>
               <div>

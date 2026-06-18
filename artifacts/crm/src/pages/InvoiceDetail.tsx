@@ -1,11 +1,11 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useRoute, useLocation, Link } from "wouter";
 import {
-  useGetInvoice, usePayInvoice, useDeleteInvoice, useGetSettings, useCopyInvoice,
+  useGetInvoice, usePayInvoice, useDeleteInvoice, useGetSettings,
   getListInvoicesQueryKey, getGetInvoiceQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Printer, CheckCircle2, Edit, Trash2, Copy, Lock } from "lucide-react";
+import { ArrowRight, Printer, CheckCircle2, Edit, Trash2, Lock } from "lucide-react";
 import { formatToman, formatJalaliDate, formatPersianNumber } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,9 +26,9 @@ export default function InvoiceDetail() {
 
   const payInvoice = usePayInvoice();
   const deleteInvoice = useDeleteInvoice();
-  const copyInvoice = useCopyInvoice();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const isManager = useManagerAccess();
 
   const handlePay = () => {
     payInvoice.mutate(
@@ -58,20 +58,6 @@ export default function InvoiceDetail() {
     }
   };
 
-  const handleCopy = () => {
-    copyInvoice.mutate(
-      { id: invoiceId },
-      {
-        onSuccess: (newInvoice) => {
-          queryClient.invalidateQueries({ queryKey: getListInvoicesQueryKey() });
-          toast({ title: "کپی فاکتور ایجاد شد" });
-          setLocation(`/invoices/${newInvoice.id}`);
-        },
-        onError: () => toast({ title: "خطا در کپی فاکتور", variant: "destructive" }),
-      }
-    );
-  };
-
   const handlePrint = () => {
     window.print();
   };
@@ -95,7 +81,6 @@ export default function InvoiceDetail() {
 
   const hasAnyPurchasePrice = invoice.items.some((i) => (i as any).purchase_price != null);
   const profit = subtotal - (invoice.discount ?? 0) - totalPurchase;
-  const isManager = useManagerAccess();
 
   return (
     <>
@@ -134,14 +119,6 @@ export default function InvoiceDetail() {
             )}
             <Button onClick={handlePrint} variant="outline">
               <Printer className="ml-2 h-4 w-4" /> چاپ / PDF
-            </Button>
-            <Button
-              onClick={handleCopy}
-              variant="outline"
-              disabled={copyInvoice.isPending}
-              title="کپی فاکتور"
-            >
-              <Copy className="ml-2 h-4 w-4" /> کپی
             </Button>
             <Button asChild variant="outline">
               <Link href={`/invoices/${invoiceId}/edit`}>
@@ -250,7 +227,6 @@ export default function InvoiceDetail() {
                   <tr className="bg-gray-100 text-gray-700">
                     <th className="py-2.5 px-4 rounded-r-lg font-medium">ردیف</th>
                     <th className="py-2.5 px-4 font-medium">شرح کالا / خدمات</th>
-                    <th className="py-2.5 px-4 text-center font-medium">برند</th>
                     <th className="py-2.5 px-4 text-center font-medium">تعداد</th>
                     <th className="py-2.5 px-4 text-center font-medium">فی (تومان)</th>
                     <th className="py-2.5 px-4 text-left rounded-l-lg font-medium">
@@ -259,27 +235,21 @@ export default function InvoiceDetail() {
                   </tr>
                 </thead>
                 <tbody className="divide-y border-b">
-                  {invoice.items.map((item, idx) => {
-                    const brand = (item as any).brand;
-                    return (
-                      <tr key={idx} className="text-gray-700">
-                        <td className="py-3 px-4">{formatPersianNumber(idx + 1)}</td>
-                        <td className="py-3 px-4">{item.title}</td>
-                        <td className="py-3 px-4 text-center text-sm">
-                          {brand || "—"}
-                        </td>
-                        <td className="py-3 px-4 text-center dir-ltr">
-                          {formatPersianNumber(item.quantity)}
-                        </td>
-                        <td className="py-3 px-4 text-center dir-ltr">
-                          {item.unit_price.toLocaleString("fa-IR")}
-                        </td>
-                        <td className="py-3 px-4 text-left dir-ltr">
-                          {(item.quantity * item.unit_price).toLocaleString("fa-IR")}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {invoice.items.map((item, idx) => (
+                    <tr key={idx} className="text-gray-700">
+                      <td className="py-3 px-4">{formatPersianNumber(idx + 1)}</td>
+                      <td className="py-3 px-4">{item.title}</td>
+                      <td className="py-3 px-4 text-center dir-ltr">
+                        {formatPersianNumber(item.quantity)}
+                      </td>
+                      <td className="py-3 px-4 text-center dir-ltr">
+                        {item.unit_price.toLocaleString("fa-IR")}
+                      </td>
+                      <td className="py-3 px-4 text-left dir-ltr">
+                        {(item.quantity * item.unit_price).toLocaleString("fa-IR")}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>

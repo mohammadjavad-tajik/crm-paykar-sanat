@@ -56468,6 +56468,9 @@ var equipmentTable = pgTable("equipment", {
   category_id: integer("category_id").references(() => equipmentCategoriesTable.id, { onDelete: "set null" }),
   specs: jsonb("specs").notNull().default([]),
   description: text("description"),
+  default_brand: text("default_brand"),
+  website_price: numeric("website_price", { precision: 14, scale: 2 }),
+  product_link: text("product_link"),
   created_at: timestamp("created_at").notNull().defaultNow()
 });
 var insertEquipmentSchema = createInsertSchema(equipmentTable).omit({ id: true, created_at: true });
@@ -57095,6 +57098,9 @@ router9.get("/equipment", async (req, res) => {
     category_name: equipmentCategoriesTable.name,
     specs: equipmentTable.specs,
     description: equipmentTable.description,
+    default_brand: equipmentTable.default_brand,
+    website_price: equipmentTable.website_price,
+    product_link: equipmentTable.product_link,
     created_at: equipmentTable.created_at
   }).from(equipmentTable).leftJoin(equipmentCategoriesTable, eq(equipmentTable.category_id, equipmentCategoriesTable.id)).where(conditions.length > 0 ? and(...conditions) : void 0).orderBy(desc(equipmentTable.created_at));
   const enriched = await Promise.all(rows.map((r) => enrichEquipment(r)));
@@ -57115,7 +57121,7 @@ router9.get("/equipment", async (req, res) => {
   res.json(enriched);
 });
 router9.post("/equipment", async (req, res) => {
-  const { name, category_id, specs, description } = req.body;
+  const { name, category_id, specs, description, default_brand, website_price, product_link } = req.body;
   if (!name) {
     res.status(400).json({ error: "name required" });
     return;
@@ -57124,7 +57130,10 @@ router9.post("/equipment", async (req, res) => {
     name,
     category_id: category_id ?? null,
     specs: specs ?? [],
-    description
+    description,
+    default_brand: default_brand ?? null,
+    website_price: website_price != null ? String(website_price) : null,
+    product_link: product_link ?? null
   }).returning();
   const [cat] = category_id ? await db.select().from(equipmentCategoriesTable).where(eq(equipmentCategoriesTable.id, category_id)) : [];
   const enriched = await enrichEquipment({ ...row, category_name: cat?.name ?? null });
@@ -57139,6 +57148,9 @@ router9.get("/equipment/:id", async (req, res) => {
     category_name: equipmentCategoriesTable.name,
     specs: equipmentTable.specs,
     description: equipmentTable.description,
+    default_brand: equipmentTable.default_brand,
+    website_price: equipmentTable.website_price,
+    product_link: equipmentTable.product_link,
     created_at: equipmentTable.created_at
   }).from(equipmentTable).leftJoin(equipmentCategoriesTable, eq(equipmentTable.category_id, equipmentCategoriesTable.id)).where(eq(equipmentTable.id, id));
   if (!row) {
@@ -57150,12 +57162,15 @@ router9.get("/equipment/:id", async (req, res) => {
 });
 router9.patch("/equipment/:id", async (req, res) => {
   const id = Number(req.params.id);
-  const { name, category_id, specs, description } = req.body;
+  const { name, category_id, specs, description, default_brand, website_price, product_link } = req.body;
   const [row] = await db.update(equipmentTable).set({
     ...name !== void 0 && { name },
     ...category_id !== void 0 && { category_id: category_id ?? null },
     ...specs !== void 0 && { specs },
-    ...description !== void 0 && { description }
+    ...description !== void 0 && { description },
+    ...default_brand !== void 0 && { default_brand: default_brand ?? null },
+    ...website_price !== void 0 && { website_price: website_price != null ? String(website_price) : null },
+    ...product_link !== void 0 && { product_link: product_link ?? null }
   }).where(eq(equipmentTable.id, id)).returning();
   if (!row) {
     res.status(404).json({ error: "Not found" });
@@ -57176,7 +57191,8 @@ router9.get("/equipment/:id/suppliers", async (req, res) => {
     ...l.equipment_suppliers,
     purchase_price: Number(l.equipment_suppliers.purchase_price),
     sell_price: Number(l.equipment_suppliers.sell_price),
-    supplier_name: l.suppliers?.name ?? null
+    supplier_name: l.suppliers?.name ?? null,
+    supplier_phone: l.suppliers?.phone ?? null
   })));
 });
 router9.post("/equipment/:id/suppliers", async (req, res) => {

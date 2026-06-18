@@ -7,7 +7,10 @@ import {
   getListEquipmentQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Pencil, Search, ChevronDown, ChevronUp, Tag, Link2, ChevronLeft } from "lucide-react";
+import {
+  Plus, Trash2, Pencil, Search, ChevronDown, ChevronUp,
+  Tag, ChevronLeft, Building2, ExternalLink,
+} from "lucide-react";
 import { formatToman } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,14 +28,14 @@ type EquipmentFormData = {
   name: string;
   category_id?: string;
   description?: string;
+  default_brand?: string;
+  website_price?: number | null;
+  product_link?: string;
   specs: SpecEntry[];
 };
 type SupplierLinkFormData = {
   supplier_id: string;
-  brand?: string;
   purchase_price: number;
-  sell_price: number;
-  supplier_code?: string;
   is_default: boolean;
   notes?: string;
 };
@@ -120,6 +123,35 @@ function EquipmentForm({
           <FormItem><FormLabel>توضیحات</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
         )} />
 
+        <div className="grid grid-cols-2 gap-4">
+          <FormField control={form.control} name="default_brand" render={({ field }) => (
+            <FormItem><FormLabel>برند</FormLabel><FormControl><Input {...field} placeholder="مثلاً: ABB, Siemens" /></FormControl></FormItem>
+          )} />
+          <FormField control={form.control} name="website_price" render={({ field }) => (
+            <FormItem>
+              <FormLabel>قیمت سایت (تومان)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  className="dir-ltr text-right"
+                  placeholder="۰"
+                  value={field.value ?? ""}
+                  onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                />
+              </FormControl>
+            </FormItem>
+          )} />
+        </div>
+
+        <FormField control={form.control} name="product_link" render={({ field }) => (
+          <FormItem>
+            <FormLabel>لینک محصول</FormLabel>
+            <FormControl>
+              <Input {...field} className="dir-ltr" placeholder="https://..." type="url" />
+            </FormControl>
+          </FormItem>
+        )} />
+
         <div>
           <div className="flex justify-between items-center mb-2">
             <label className="text-sm font-medium leading-none">مشخصات فنی</label>
@@ -174,29 +206,13 @@ function SupplierLinkForm({
             </Select>
           </FormItem>
         )} />
-        <FormField control={form.control} name="brand" render={({ field }) => (
-          <FormItem><FormLabel>برند / مدل</FormLabel><FormControl><Input {...field} placeholder="مثلاً: ABB, Siemens" /></FormControl></FormItem>
-        )} />
-        <div className="grid grid-cols-2 gap-4">
-          <FormField control={form.control} name="purchase_price" render={({ field }) => (
-            <FormItem>
-              <FormLabel>قیمت خرید (تومان)</FormLabel>
-              <FormControl>
-                <Input type="number" className="dir-ltr text-right" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-              </FormControl>
-            </FormItem>
-          )} />
-          <FormField control={form.control} name="sell_price" render={({ field }) => (
-            <FormItem>
-              <FormLabel>قیمت فروش (تومان)</FormLabel>
-              <FormControl>
-                <Input type="number" className="dir-ltr text-right" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-              </FormControl>
-            </FormItem>
-          )} />
-        </div>
-        <FormField control={form.control} name="supplier_code" render={({ field }) => (
-          <FormItem><FormLabel>کد محصول نزد تامین‌کننده</FormLabel><FormControl><Input {...field} className="dir-ltr" /></FormControl></FormItem>
+        <FormField control={form.control} name="purchase_price" render={({ field }) => (
+          <FormItem>
+            <FormLabel>قیمت خرید (تومان)</FormLabel>
+            <FormControl>
+              <Input type="number" className="dir-ltr text-right" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+            </FormControl>
+          </FormItem>
         )} />
         <FormField control={form.control} name="notes" render={({ field }) => (
           <FormItem><FormLabel>یادداشت</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
@@ -209,6 +225,201 @@ function SupplierLinkForm({
   );
 }
 
+function SuppliersDialog({
+  open, onClose, equipment, suppliers,
+}: {
+  open: boolean;
+  onClose: () => void;
+  equipment: any;
+  suppliers: Array<{ id: number; name: string }>;
+}) {
+  const [addOpen, setAddOpen] = useState(false);
+  const [editLink, setEditLink] = useState<any | null>(null);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const { data: links, isLoading } = useListEquipmentSuppliers(equipment?.id ?? 0, {
+    query: { enabled: open && !!equipment },
+  });
+
+  const addLinkMutation = useAddEquipmentSupplier();
+  const updateLinkMutation = useUpdateEquipmentSupplier();
+  const deleteLinkMutation = useDeleteEquipmentSupplier();
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: getListEquipmentSuppliersQueryKey(equipment.id) });
+    queryClient.invalidateQueries({ queryKey: getListEquipmentQueryKey() });
+  };
+
+  const handleAdd = (data: SupplierLinkFormData) => {
+    addLinkMutation.mutate({
+      id: equipment.id,
+      data: {
+        supplier_id: Number(data.supplier_id),
+        purchase_price: data.purchase_price,
+        sell_price: 0,
+        is_default: data.is_default,
+        notes: data.notes,
+      },
+    }, {
+      onSuccess: () => {
+        invalidate();
+        setAddOpen(false);
+        toast({ title: "تامین‌کننده اضافه شد" });
+      },
+      onError: () => toast({ title: "خطا در افزودن", variant: "destructive" }),
+    });
+  };
+
+  const handleEdit = (data: SupplierLinkFormData) => {
+    if (!editLink) return;
+    updateLinkMutation.mutate({
+      id: equipment.id,
+      linkId: editLink.id,
+      data: {
+        purchase_price: data.purchase_price,
+        sell_price: editLink.sell_price,
+        is_default: data.is_default,
+        notes: data.notes,
+      },
+    }, {
+      onSuccess: () => {
+        invalidate();
+        setEditLink(null);
+        toast({ title: "تامین‌کننده ویرایش شد" });
+      },
+      onError: () => toast({ title: "خطا در ویرایش", variant: "destructive" }),
+    });
+  };
+
+  const handleDelete = (linkId: number) => {
+    if (!confirm("آیا این تامین‌کننده حذف شود؟")) return;
+    deleteLinkMutation.mutate({ id: equipment.id, linkId }, {
+      onSuccess: () => {
+        invalidate();
+        toast({ title: "حذف شد" });
+      },
+    });
+  };
+
+  if (!equipment) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            تامین‌کنندگان: {equipment.name}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4 mt-2">
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-muted-foreground">
+              {links?.length ? `${links.length} تامین‌کننده ثبت شده` : "تامین‌کننده‌ای ثبت نشده"}
+            </p>
+            <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
+              <Plus className="h-3.5 w-3.5 ml-1" /> افزودن تامین‌کننده
+            </Button>
+          </div>
+
+          {isLoading ? (
+            <Skeleton className="h-20 w-full" />
+          ) : !links || links.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground text-sm bg-muted/30 rounded-lg">
+              هنوز تامین‌کننده‌ای برای این تجهیز ثبت نشده
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {links.map((link) => (
+                <div key={link.id} className="bg-card border border-border rounded-lg px-4 py-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <a
+                          href={`/suppliers`}
+                          className="font-medium text-sm text-blue-600 hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {link.supplier_name || "—"}
+                        </a>
+                        {(link as any).supplier_phone && (
+                          <a
+                            href={`tel:${(link as any).supplier_phone}`}
+                            className="text-xs text-emerald-600 hover:underline flex items-center gap-0.5"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            📞 {(link as any).supplier_phone}
+                          </a>
+                        )}
+                        {link.is_default && <Badge className="text-xs bg-blue-100 text-blue-700 border-blue-200">پیش‌فرض</Badge>}
+                      </div>
+                      <div className="flex gap-4 text-xs text-muted-foreground">
+                        <span>خرید: <span className="text-foreground font-medium">{formatToman(link.purchase_price)}</span></span>
+                      </div>
+                      {link.notes && <p className="text-xs text-muted-foreground">{link.notes}</p>}
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <Button
+                        variant="outline" size="icon"
+                        className="h-7 w-7 border-blue-200 bg-blue-50 text-blue-500 hover:bg-blue-100"
+                        onClick={() => setEditLink(link)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost" size="icon"
+                        className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDelete(link.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </DialogContent>
+
+      <Dialog open={addOpen} onOpenChange={(o) => !o && setAddOpen(false)}>
+        <DialogContent className="sm:max-w-[440px]">
+          <DialogHeader><DialogTitle>افزودن تامین‌کننده</DialogTitle></DialogHeader>
+          <SupplierLinkForm
+            defaultValues={{ supplier_id: "", purchase_price: 0, is_default: false, notes: "" }}
+            onSubmit={handleAdd}
+            isPending={addLinkMutation.isPending}
+            submitLabel="ثبت"
+            suppliers={suppliers}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!editLink} onOpenChange={(o) => !o && setEditLink(null)}>
+        <DialogContent className="sm:max-w-[440px]">
+          <DialogHeader><DialogTitle>ویرایش تامین‌کننده</DialogTitle></DialogHeader>
+          {editLink && (
+            <SupplierLinkForm
+              defaultValues={{
+                supplier_id: String(editLink.supplier_id),
+                purchase_price: editLink.purchase_price,
+                is_default: editLink.is_default,
+                notes: editLink.notes ?? "",
+              }}
+              onSubmit={handleEdit}
+              isPending={updateLinkMutation.isPending}
+              submitLabel="ذخیره تغییرات"
+              suppliers={suppliers}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </Dialog>
+  );
+}
+
 function EquipmentRow({ equipment, categories, suppliers, onEdit, onDelete }: {
   equipment: any;
   categories: Category[];
@@ -217,52 +428,7 @@ function EquipmentRow({ equipment, categories, suppliers, onEdit, onDelete }: {
   onDelete: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [isAddSupplierOpen, setIsAddSupplierOpen] = useState(false);
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  const { data: links, isLoading: linksLoading } = useListEquipmentSuppliers(equipment.id, {
-    query: { enabled: expanded },
-  });
-
-  const addLink = useAddEquipmentSupplier();
-  const deleteLink = useDeleteEquipmentSupplier();
-
-  const invalidateEquipment = () => queryClient.invalidateQueries({ queryKey: getListEquipmentQueryKey() });
-
-  const handleAddSupplier = (data: SupplierLinkFormData) => {
-    addLink.mutate({
-      id: equipment.id,
-      data: {
-        supplier_id: Number(data.supplier_id),
-        brand: data.brand,
-        purchase_price: data.purchase_price,
-        sell_price: data.sell_price,
-        supplier_code: data.supplier_code,
-        is_default: data.is_default,
-        notes: data.notes,
-      },
-    }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListEquipmentSuppliersQueryKey(equipment.id) });
-        invalidateEquipment();
-        setIsAddSupplierOpen(false);
-        toast({ title: "تامین‌کننده اضافه شد" });
-      },
-      onError: () => toast({ title: "خطا", variant: "destructive" }),
-    });
-  };
-
-  const handleDeleteLink = (linkId: number) => {
-    if (!confirm("آیا این تامین‌کننده حذف شود؟")) return;
-    deleteLink.mutate({ id: equipment.id, linkId }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListEquipmentSuppliersQueryKey(equipment.id) });
-        invalidateEquipment();
-        toast({ title: "حذف شد" });
-      },
-    });
-  };
+  const [suppliersOpen, setSuppliersOpen] = useState(false);
 
   const specs = (equipment.specs as SpecEntry[]) ?? [];
 
@@ -276,13 +442,27 @@ function EquipmentRow({ equipment, categories, suppliers, onEdit, onDelete }: {
     <>
       <TableRow className="hover:bg-muted/30 transition-colors">
         <TableCell className="pr-4">
-          <button
-            className="flex items-center gap-2 font-medium hover:text-primary text-right"
-            onClick={() => setExpanded((e) => !e)}
-          >
-            {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />}
-            {equipment.name}
-          </button>
+          <div className="flex items-center gap-2">
+            {specs.length > 0 && (
+              <button onClick={() => setExpanded((e) => !e)} className="text-muted-foreground hover:text-foreground">
+                {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+            )}
+            <div>
+              <span className="font-medium">{equipment.name}</span>
+              {equipment.product_link && (
+                <a
+                  href={equipment.product_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mr-2 text-blue-500 hover:text-blue-600 inline-flex items-center"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              )}
+            </div>
+          </div>
         </TableCell>
         <TableCell className="text-center">
           {categoryLabel ? (
@@ -293,12 +473,29 @@ function EquipmentRow({ equipment, categories, suppliers, onEdit, onDelete }: {
           {equipment.default_brand || <span className="text-muted-foreground">—</span>}
         </TableCell>
         <TableCell className="text-center text-sm">
+          {equipment.website_price != null ? (
+            <span className="text-blue-600 font-medium">{formatToman(Number(equipment.website_price))}</span>
+          ) : <span className="text-muted-foreground">—</span>}
+        </TableCell>
+        <TableCell className="text-center text-sm">
+          {equipment.min_purchase_price != null ? (
+            <span className="text-amber-600 font-medium">{formatToman(equipment.min_purchase_price)}</span>
+          ) : <span className="text-muted-foreground">—</span>}
+        </TableCell>
+        <TableCell className="text-center text-sm">
           {equipment.min_sell_price != null ? (
             <span className="text-emerald-600 font-medium">{formatToman(equipment.min_sell_price)}</span>
           ) : <span className="text-muted-foreground">—</span>}
         </TableCell>
         <TableCell className="text-center">
           <div className="flex items-center justify-center gap-1">
+            <Button
+              variant="outline" size="sm"
+              className="h-8 px-2 text-xs border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-100"
+              onClick={() => setSuppliersOpen(true)}
+            >
+              <Building2 className="h-3.5 w-3.5 ml-1" /> تامین‌کنندگان
+            </Button>
             <Button
               variant="outline" size="icon"
               className="h-8 w-8 border-blue-200 bg-blue-50 text-blue-500 hover:bg-blue-100"
@@ -317,84 +514,30 @@ function EquipmentRow({ equipment, categories, suppliers, onEdit, onDelete }: {
         </TableCell>
       </TableRow>
 
-      {expanded && (
+      {expanded && specs.length > 0 && (
         <TableRow>
-          <TableCell colSpan={5} className="bg-muted/20 px-6 py-4">
-            <div className="space-y-4">
-              {specs.length > 0 && (
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1">
-                    <Tag className="h-3.5 w-3.5" /> مشخصات فنی
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {specs.map((s, i) => (
-                      <div key={i} className="bg-card border border-border rounded-lg px-3 py-1.5 text-sm">
-                        <span className="text-muted-foreground">{s.key}: </span>
-                        <span className="font-medium">{s.value}</span>
-                      </div>
-                    ))}
-                  </div>
+          <TableCell colSpan={7} className="bg-muted/20 px-6 py-3">
+            <p className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1">
+              <Tag className="h-3.5 w-3.5" /> مشخصات فنی
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {specs.map((s, i) => (
+                <div key={i} className="bg-card border border-border rounded-lg px-3 py-1.5 text-sm">
+                  <span className="text-muted-foreground">{s.key}: </span>
+                  <span className="font-medium">{s.value}</span>
                 </div>
-              )}
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-                    <Link2 className="h-3.5 w-3.5" /> تامین‌کنندگان این تجهیز
-                  </p>
-                  <Dialog open={isAddSupplierOpen} onOpenChange={setIsAddSupplierOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-7 text-xs">
-                        <Plus className="h-3.5 w-3.5 ml-1" /> افزودن تامین‌کننده
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[440px]">
-                      <DialogHeader><DialogTitle>افزودن تامین‌کننده به تجهیز</DialogTitle></DialogHeader>
-                      <SupplierLinkForm
-                        defaultValues={{ supplier_id: "", brand: "", purchase_price: 0, sell_price: 0, supplier_code: "", is_default: false, notes: "" }}
-                        onSubmit={handleAddSupplier}
-                        isPending={addLink.isPending}
-                        submitLabel="ثبت"
-                        suppliers={suppliers}
-                      />
-                    </DialogContent>
-                  </Dialog>
-                </div>
-                {linksLoading ? (
-                  <Skeleton className="h-10 w-full" />
-                ) : !links || links.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">تامین‌کننده‌ای ثبت نشده</p>
-                ) : (
-                  <div className="space-y-2">
-                    {links.map((link) => (
-                      <div key={link.id} className="flex items-center justify-between bg-card border border-border rounded-lg px-4 py-2.5 text-sm">
-                        <div className="flex items-center gap-4">
-                          <span className="font-medium">{link.supplier_name || "—"}</span>
-                          {link.brand && <Badge variant="outline" className="text-xs">{link.brand}</Badge>}
-                          {link.is_default && <Badge className="text-xs bg-blue-100 text-blue-700 border-blue-200">پیش‌فرض</Badge>}
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-left">
-                            <p className="text-xs text-muted-foreground">خرید: <span className="text-foreground font-medium">{formatToman(link.purchase_price)}</span></p>
-                            <p className="text-xs text-muted-foreground">فروش: <span className="text-emerald-600 font-medium">{formatToman(link.sell_price)}</span></p>
-                          </div>
-                          <Button
-                            variant="ghost" size="icon"
-                            className="h-7 w-7 text-destructive hover:bg-destructive/10"
-                            onClick={() => handleDeleteLink(link.id)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              ))}
             </div>
           </TableCell>
         </TableRow>
       )}
+
+      <SuppliersDialog
+        open={suppliersOpen}
+        onClose={() => setSuppliersOpen(false)}
+        equipment={equipment}
+        suppliers={suppliers}
+      />
     </>
   );
 }
@@ -441,6 +584,9 @@ export default function EquipmentList() {
     category_id: data.category_id && data.category_id !== "none" ? Number(data.category_id) : null,
     description: data.description,
     specs: data.specs.filter((s) => s.key.trim()),
+    default_brand: data.default_brand || null,
+    website_price: data.website_price ?? null,
+    product_link: data.product_link || null,
   });
 
   const handleCreate = (data: EquipmentFormData) => {
@@ -539,7 +685,7 @@ export default function EquipmentList() {
             <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>تجهیز جدید</DialogTitle></DialogHeader>
               <EquipmentForm
-                defaultValues={{ name: "", category_id: "none", description: "", specs: [] }}
+                defaultValues={{ name: "", category_id: "none", description: "", default_brand: "", website_price: null, product_link: "", specs: [] }}
                 onSubmit={handleCreate}
                 isPending={createEquipment.isPending}
                 submitLabel="ثبت تجهیز"
@@ -559,6 +705,9 @@ export default function EquipmentList() {
                 name: editEquipment.name,
                 category_id: editEquipment.category_id ? String(editEquipment.category_id) : "none",
                 description: editEquipment.description ?? "",
+                default_brand: editEquipment.default_brand ?? "",
+                website_price: editEquipment.website_price != null ? Number(editEquipment.website_price) : null,
+                product_link: editEquipment.product_link ?? "",
                 specs: editEquipment.specs ?? [],
               }}
               onSubmit={handleUpdate}
@@ -601,24 +750,26 @@ export default function EquipmentList() {
           <TableHeader>
             <TableRow className="bg-muted/40">
               <TableHead className="font-semibold text-right pr-4">نام تجهیز</TableHead>
-              <TableHead className="font-semibold text-center w-36">دسته</TableHead>
-              <TableHead className="font-semibold text-center w-36">برند پیش‌فرض</TableHead>
-              <TableHead className="font-semibold text-center w-36">قیمت فروش</TableHead>
-              <TableHead className="font-semibold text-center w-24">عملیات</TableHead>
+              <TableHead className="font-semibold text-center w-32">دسته</TableHead>
+              <TableHead className="font-semibold text-center w-28">برند</TableHead>
+              <TableHead className="font-semibold text-center w-28">قیمت سایت</TableHead>
+              <TableHead className="font-semibold text-center w-28">قیمت خرید</TableHead>
+              <TableHead className="font-semibold text-center w-28">قیمت فروش</TableHead>
+              <TableHead className="font-semibold text-center w-44">عملیات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  {[...Array(5)].map((_, j) => (
+                  {[...Array(7)].map((_, j) => (
                     <TableCell key={j} className="text-center"><Skeleton className="h-5 w-24 mx-auto" /></TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (equipments?.length ?? 0) === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">تجهیزی یافت نشد</TableCell>
+                <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">تجهیزی یافت نشد</TableCell>
               </TableRow>
             ) : (
               equipments?.map((eq) => (

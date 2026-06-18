@@ -80,6 +80,9 @@ router.get("/equipment", async (req, res) => {
       category_name: equipmentCategoriesTable.name,
       specs: equipmentTable.specs,
       description: equipmentTable.description,
+      default_brand: equipmentTable.default_brand,
+      website_price: equipmentTable.website_price,
+      product_link: equipmentTable.product_link,
       created_at: equipmentTable.created_at,
     })
     .from(equipmentTable)
@@ -107,13 +110,16 @@ router.get("/equipment", async (req, res) => {
 });
 
 router.post("/equipment", async (req, res) => {
-  const { name, category_id, specs, description } = req.body;
+  const { name, category_id, specs, description, default_brand, website_price, product_link } = req.body;
   if (!name) { res.status(400).json({ error: "name required" }); return; }
   const [row] = await db.insert(equipmentTable).values({
     name,
     category_id: category_id ?? null,
     specs: specs ?? [],
     description,
+    default_brand: default_brand ?? null,
+    website_price: website_price != null ? String(website_price) : null,
+    product_link: product_link ?? null,
   }).returning();
 
   const [cat] = category_id
@@ -134,6 +140,9 @@ router.get("/equipment/:id", async (req, res) => {
       category_name: equipmentCategoriesTable.name,
       specs: equipmentTable.specs,
       description: equipmentTable.description,
+      default_brand: equipmentTable.default_brand,
+      website_price: equipmentTable.website_price,
+      product_link: equipmentTable.product_link,
       created_at: equipmentTable.created_at,
     })
     .from(equipmentTable)
@@ -147,12 +156,15 @@ router.get("/equipment/:id", async (req, res) => {
 
 router.patch("/equipment/:id", async (req, res) => {
   const id = Number(req.params.id);
-  const { name, category_id, specs, description } = req.body;
+  const { name, category_id, specs, description, default_brand, website_price, product_link } = req.body;
   const [row] = await db.update(equipmentTable).set({
     ...(name !== undefined && { name }),
     ...(category_id !== undefined && { category_id: category_id ?? null }),
     ...(specs !== undefined && { specs }),
     ...(description !== undefined && { description }),
+    ...(default_brand !== undefined && { default_brand: default_brand ?? null }),
+    ...(website_price !== undefined && { website_price: website_price != null ? String(website_price) : null }),
+    ...(product_link !== undefined && { product_link: product_link ?? null }),
   }).where(eq(equipmentTable.id, id)).returning();
 
   if (!row) { res.status(404).json({ error: "Not found" }); return; }
@@ -181,6 +193,7 @@ router.get("/equipment/:id/suppliers", async (req, res) => {
     purchase_price: Number(l.equipment_suppliers.purchase_price),
     sell_price: Number(l.equipment_suppliers.sell_price),
     supplier_name: l.suppliers?.name ?? null,
+    supplier_phone: l.suppliers?.phone ?? null,
   })));
 });
 
